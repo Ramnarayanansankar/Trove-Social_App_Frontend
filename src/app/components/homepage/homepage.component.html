@@ -1,0 +1,153 @@
+<div class="homepage-container">
+  <!-- Header/Navigation -->
+  <header class="header">
+    <div class="header-content">
+      <div class="logo">
+        <h1>📱 Trove</h1>
+      </div>
+      <nav class="nav-menu">
+        <a href="#" class="nav-item active">
+          <span class="icon">🏠</span>
+          <span>Home</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">👥</span>
+          <span>Friends</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">💬</span>
+          <span>Messages</span>
+        </a>
+        <a href="#" class="nav-item">
+          <span class="icon">🔔</span>
+          <span>Notifications</span>
+        </a>
+      </nav>
+      <div class="user-section">
+        <div class="user-profile">
+          <div class="avatar">{{ userInitials }}</div>
+          <span class="username">{{ userName }}</span>
+        </div>
+        <button class="logout-btn" (click)="logout()">Logout</button>
+      </div>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main-content">
+    <!-- Left Sidebar -->
+    <aside class="sidebar left-sidebar">
+      <div class="sidebar-section">
+        <h3>Quick Links</h3>
+        <ul class="sidebar-menu">
+          <li><a href="#"><span class="icon">📰</span> News Feed</a></li>
+          <li><a href="#"><span class="icon">👤</span> Profile</a></li>
+          <li><a href="#"><span class="icon">📸</span> Photos</a></li>
+          <li><a href="#"><span class="icon">🎥</span> Videos</a></li>
+          <li><a href="#"><span class="icon">🎮</span> Games</a></li>
+          <li><a href="#"><span class="icon">⚙️</span> Settings</a></li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Your Pages</h3>
+        <ul class="sidebar-menu">
+          <li><a href="#"><span class="icon">📄</span> Create Page</a></li>
+        </ul>
+      </div>
+    </aside>
+
+    <!-- Center Feed -->
+    <section class="feed-section">
+      <!-- Create Post -->
+      <div class="create-post-card">
+        <div class="post-header">
+          <div class="avatar">{{ userInitials }}</div>
+          <input 
+            type="text" 
+            placeholder="What's on your mind, {{ userName }}?" 
+            class="post-input"
+            (click)="openCreatePostModal()"
+          />
+        </div>
+        <div class="post-actions">
+          <button class="action-btn">
+            <span class="icon">📷</span>
+            <span>Photo</span>
+          </button>
+          <button class="action-btn">
+            <span class="icon">🎥</span>
+            <span>Video</span>
+          </button>
+          <button class="action-btn">
+            <span class="icon">😊</span>
+            <span>Feeling</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Posts Feed -->
+      <div class="posts-container">
+        <div class="post-card" *ngFor="let post of samplePosts">
+          <div class="post-header">
+            <div class="post-author">
+              <div class="avatar">{{ post.authorInitials }}</div>
+              <div class="author-info">
+                <h4>{{ post.authorName }}</h4>
+                <span class="post-time">{{ post.timeAgo }}</span>
+              </div>
+            </div>
+            <button class="more-btn">⋯</button>
+          </div>
+          
+          <div class="post-content">
+            <p>{{ post.content }}</p>
+            <img *ngIf="post.image" [src]="post.image" [alt]="post.content" class="post-image" />
+          </div>
+          
+          <div class="post-stats">
+            <span class="likes">{{ post.likes }} likes</span>
+            <span class="comments">{{ post.comments }} comments</span>
+          </div>
+          
+          <div class="post-actions-bar">
+            <button class="action-btn-bar">
+              <span class="icon">👍</span>
+              <span>Like</span>
+            </button>
+            <button class="action-btn-bar">
+              <span class="icon">💬</span>
+              <span>Comment</span>
+            </button>
+            <button class="action-btn-bar">
+              <span class="icon">📤</span>
+              <span>Share</span>
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Right Sidebar -->
+    <aside class="sidebar right-sidebar">
+      <div class="sidebar-section">
+        <h3>Contacts</h3>
+        <ul class="contacts-list">
+          <li *ngFor="let contact of sampleContacts" class="contact-item">
+            <div class="avatar small">{{ contact.initials }}</div>
+            <span>{{ contact.name }}</span>
+          </li>
+        </ul>
+      </div>
+      
+      <div class="sidebar-section">
+        <h3>Trending</h3>
+        <ul class="trending-list">
+          <li *ngFor="let trend of trendingTopics">
+            <a href="#">{{ trend }}</a>
+          </li>
+        </ul>
+      </div>
+    </aside>
+  </main>
+</div>
