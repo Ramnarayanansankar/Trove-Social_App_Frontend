@@ -1,0 +1,244 @@
+<div class="form-container">
+  <h1 class="form-title">Create Your Account</h1>
+  <p style="text-align: center; color: #666; margin-bottom: 30px;">Join Trove Social App and connect with friends</p>
+
+  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+    
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+      {{ errorMessage }}
+    </div>
+
+    <!-- First Name and Last Name -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="firstName">First Name *</label>
+        <input
+          type="text"
+          id="firstName"
+          formControlName="firstName"
+          class="form-control"
+          [class.error]="submitted && f['firstName'].invalid"
+          placeholder="Enter your first name"
+        />
+        <span class="error-message" *ngIf="getFieldError('firstName')">
+          {{ getFieldError('firstName') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="lastName">Last Name *</label>
+        <input
+          type="text"
+          id="lastName"
+          formControlName="lastName"
+          class="form-control"
+          [class.error]="submitted && f['lastName'].invalid"
+          placeholder="Enter your last name"
+        />
+        <span class="error-message" *ngIf="getFieldError('lastName')">
+          {{ getFieldError('lastName') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label class="form-label" for="email">Email *</label>
+      <input
+        type="email"
+        id="email"
+        formControlName="email"
+        class="form-control"
+        [class.error]="submitted && f['email'].invalid"
+        placeholder="Enter your email address"
+      />
+      <span class="error-message" *ngIf="getFieldError('email')">
+        {{ getFieldError('email') }}
+      </span>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label class="form-label" for="password">Password *</label>
+      <input
+        type="password"
+        id="password"
+        formControlName="password"
+        class="form-control"
+        [class.error]="submitted && f['password'].invalid"
+        placeholder="Enter a strong password"
+      />
+      <span class="error-message" *ngIf="getFieldError('password')">
+        {{ getFieldError('password') }}
+      </span>
+      <small style="color: #666; font-size: 12px; margin-top: 5px; display: block;">
+        Must contain uppercase, lowercase, number, and special character
+      </small>
+    </div>
+
+    <!-- Phone Number and Gender -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="phoneNumber">Phone Number *</label>
+        <input
+          type="tel"
+          id="phoneNumber"
+          formControlName="phoneNumber"
+          class="form-control"
+          [class.error]="submitted && f['phoneNumber'].invalid"
+          placeholder="+1 (555) 123-4567"
+        />
+        <span class="error-message" *ngIf="getFieldError('phoneNumber')">
+          {{ getFieldError('phoneNumber') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="gender">Gender *</label>
+        <select
+          id="gender"
+          formControlName="gender"
+          class="form-control"
+          [class.error]="submitted && f['gender'].invalid"
+        >
+          <option value="">Select Gender</option>
+          <option value="male">Male</option>
+          <option value="female">Female</option>
+          <option value="other">Other</option>
+          <option value="prefer-not-to-say">Prefer not to say</option>
+        </select>
+        <span class="error-message" *ngIf="getFieldError('gender')">
+          {{ getFieldError('gender') }}
+        </span>
+      </div>
+    </div>
+
+    <!-- Date of Birth -->
+    <div class="form-group">
+      <label class="form-label" for="dob">Date of Birth *</label>
+      <input
+        type="date"
+        id="dob"
+        formControlName="dob"
+        class="form-control"
+        [class.error]="submitted && f['dob'].invalid"
+      />
+      <span class="error-message" *ngIf="getFieldError('dob')">
+        {{ getFieldError('dob') }}
+      </span>
+    </div>
+
+    <!-- Country, State, City -->
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label" for="country">Country *</label>
+        <select
+          id="country"
+          formControlName="country"
+          class="form-control"
+          [class.error]="submitted && f['country'].invalid"
+        >
+          <option value="">Select Country</option>
+          <option *ngFor="let country of countries" [value]="country">
+            {{ country }}
+          </option>
+        </select>
+        <span class="error-message" *ngIf="getFieldError('country')">
+          {{ getFieldError('country') }}
+        </span>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label" for="state">State *</label>
+        <select
+          id="state"
+          formControlName="state"
+          class="form-control"
+          [class.error]="submitted && f['state'].invalid"
+          [disabled]="!availableStates.length"
+        >
+          <option value="">Select State</option>
+          <option *ngFor="let state of availableStates" [value]="state">
+            {{ state }}
+          </option>
+        </select>
+        <span class="error-message" *ngIf="getFieldError('state')">
+          {{ getFieldError('state') }}
+        </span>
+      </div>
+    </div>
+
+    <div class="form-group">
+      <label class="form-label" for="city">City *</label>
+      <select
+        id="city"
+        formControlName="city"
+        class="form-control"
+        [class.error]="submitted && f['city'].invalid"
+        [disabled]="!availableCities.length"
+      >
+        <option value="">Select City</option>
+        <option *ngFor="let city of availableCities" [value]="city">
+          {{ city }}
+        </option>
+      </select>
+      <span class="error-message" *ngIf="getFieldError('city')">
+        {{ getFieldError('city') }}
+      </span>
+    </div>
+
+    <!-- Address -->
+    <div class="form-group">
+      <label class="form-label" for="address">Address *</label>
+      <textarea
+        id="address"
+        formControlName="address"
+        class="form-control"
+        [class.error]="submitted && f['address'].invalid"
+        rows="3"
+        placeholder="Enter your full address"
+      ></textarea>
+      <span class="error-message" *ngIf="getFieldError('address')">
+        {{ getFieldError('address') }}
+      </span>
+    </div>
+
+    <!-- Pincode -->
+    <div class="form-group">
+      <label class="form-label" for="pincode">Pincode *</label>
+      <input
+        type="text"
+        id="pincode"
+        formControlName="pincode"
+        class="form-control"
+        [class.error]="submitted && f['pincode'].invalid"
+        placeholder="Enter pincode"
+        maxlength="6"
+      />
+      <span class="error-message" *ngIf="getFieldError('pincode')">
+        {{ getFieldError('pincode') }}
+      </span>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="isLoading"
+    >
+      <span *ngIf="!isLoading">Create Account</span>
+      <span *ngIf="isLoading">Creating Account...</span>
+    </button>
+
+    <p style="text-align: center; margin-top: 20px; color: #666; font-size: 14px;">
+      Already have an account? <a href="#" style="color: #667eea; text-decoration: none;">Sign in</a>
+    </p>
+  </form>
+</div>
+
