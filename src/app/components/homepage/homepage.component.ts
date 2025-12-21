@@ -81,12 +81,28 @@ export class HomepageComponent implements OnInit {
   constructor(private router: Router) { }
 
   ngOnInit(): void {
-    // Get user info from localStorage or service
+    // Get user info from localStorage
     const storedUser = localStorage.getItem('currentUser');
     if (storedUser) {
-      const user = JSON.parse(storedUser);
-      this.userName = user.firstName || 'User';
-      this.userInitials = (user.firstName?.[0] || 'U') + (user.lastName?.[0] || '');
+      try {
+        const user = JSON.parse(storedUser);
+        // Set first name as userName
+        this.userName = user.firstName || 'User';
+        // Set initials from first and last name
+        const firstNameInitial = user.firstName?.[0]?.toUpperCase() || '';
+        const lastNameInitial = user.lastName?.[0]?.toUpperCase() || '';
+        this.userInitials = firstNameInitial + lastNameInitial || 'U';
+        
+        console.log('User data loaded:', { firstName: user.firstName, userName: this.userName });
+      } catch (error) {
+        console.error('Error parsing user data:', error);
+        this.userName = 'User';
+        this.userInitials = 'U';
+      }
+    } else {
+      // If no user data found, redirect to signup
+      console.warn('No user data found, redirecting to signup');
+      this.router.navigate(['/signup']);
     }
   }
 

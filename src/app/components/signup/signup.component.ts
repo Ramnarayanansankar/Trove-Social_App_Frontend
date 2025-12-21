@@ -875,25 +875,51 @@ export class SignupComponent implements OnInit {
     this.errorMessage = '';
 
     if (this.signupForm.invalid) {
+      console.log('Form is invalid');
       return;
     }
 
     this.isLoading = true;
     const formData: SignupData = this.signupForm.value;
+    
+    console.log('Submitting signup form with data:', formData);
+    console.log('API Endpoint: http://localhost:8081/signUp');
 
     this.signupService.signup(formData).subscribe({
       next: (response) => {
         this.isLoading = false;
+        console.log('API Response received:', response);
+        
         // Store user data in localStorage
         localStorage.setItem('currentUser', JSON.stringify(formData));
-        // Navigate to homepage
-        this.router.navigate(['/home']);
-        console.log('Signup successful:', response);
+        
+        // Show success message briefly before navigation
+        this.successMessage = 'Signup successful! Welcome to Trove Social App.';
+        
+        // Navigate to homepage after a short delay
+        setTimeout(() => {
+          this.router.navigate(['/home']);
+        }, 1000);
       },
       error: (error) => {
         this.isLoading = false;
-        this.errorMessage = error.error?.message || 'Signup failed. Please try again.';
-        console.error('Signup error:', error);
+        console.error('API Error Details:', error);
+        console.error('Error Status:', error.status);
+        console.error('Error Message:', error.message);
+        console.error('Error Body:', error.error);
+        
+        // Handle different error scenarios
+        if (error.status === 0) {
+          this.errorMessage = 'Unable to connect to server. Please check if the backend is running on http://localhost:8081';
+        } else if (error.status === 400) {
+          this.errorMessage = error.error?.message || 'Invalid data. Please check your input.';
+        } else if (error.status === 409) {
+          this.errorMessage = error.error?.message || 'User already exists with this email.';
+        } else if (error.status === 500) {
+          this.errorMessage = error.error?.message || 'Server error. Please try again later.';
+        } else {
+          this.errorMessage = error.error?.message || 'Signup failed. Please try again.';
+        }
       }
     });
   }

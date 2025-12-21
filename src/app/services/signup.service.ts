@@ -1,5 +1,5 @@
 import { Injectable } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
+import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Observable } from 'rxjs';
 
 export interface SignupData {
@@ -21,12 +21,21 @@ export interface SignupData {
   providedIn: 'root'
 })
 export class SignupService {
-  private apiUrl = 'http://localhost:8081/signUp';
+  // Use relative URL - Angular proxy will handle routing to backend
+  private apiUrl = '/signUp';
+  private httpOptions = {
+    headers: new HttpHeaders({
+      'Content-Type': 'application/json',
+      'Accept': 'application/json'
+    })
+  };
 
   constructor(private http: HttpClient) { }
 
   signup(userData: SignupData): Observable<any> {
-    return this.http.post(this.apiUrl, userData);
+    console.log('Calling API:', this.apiUrl);
+    console.log('Sending data:', userData);
+    return this.http.post<any>(this.apiUrl, userData, this.httpOptions);
   }
 }
 
