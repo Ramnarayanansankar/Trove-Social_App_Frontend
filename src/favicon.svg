@@ -1,0 +1,20 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Trove Social">
+  <defs>
+    <linearGradient id="g" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#667eea" />
+      <stop offset="100%" stop-color="#764ba2" />
+    </linearGradient>
+  </defs>
+  <rect x="4" y="4" width="56" height="56" rx="12" fill="url(#g)" />
+  <path d="M22 18h20c1.1 0 2 .9 2 2v6c0 1.1-.9 2-2 2h-6v18c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2V28h-6c-1.1 0-2-.9-2-2v-6c0-1.1.9-2 2-2z" fill="#fff" />
+</svg>
+{
+  "cells": [],
+  "metadata": {
+    "language_info": {
+      "name": "python"
+    }
+  },
+  "nbformat": 4,
+  "nbformat_minor": 2
+}
