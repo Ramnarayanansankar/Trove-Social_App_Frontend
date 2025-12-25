@@ -21,8 +21,8 @@ export interface SignupData {
   providedIn: 'root'
 })
 export class SignupService {
-  // Use relative URL - Angular proxy will handle routing to backend
-  private apiUrl = '/signUp';
+  // Base URL for authentication endpoints
+  private baseUrl = '/api/auth';
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
@@ -33,9 +33,10 @@ export class SignupService {
   constructor(private http: HttpClient) { }
 
   signup(userData: SignupData): Observable<any> {
-    console.log('Calling API:', this.apiUrl);
+    const apiUrl = `${this.baseUrl}/signUp`;
+    console.log('Calling API:', apiUrl);
     console.log('Sending data:', userData);
-    return this.http.post<any>(this.apiUrl, userData, this.httpOptions);
+    return this.http.post<any>(apiUrl, userData, this.httpOptions);
   }
 }
 

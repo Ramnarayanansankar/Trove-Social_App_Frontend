@@ -1,0 +1,71 @@
+<div class="form-container">
+  <h1 class="form-title">Trove</h1>
+  <p style="text-align: center; color: #666; margin-bottom: 30px;">Welcome Back</p>
+
+  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
+    
+    <!-- Success Message -->
+    <div *ngIf="successMessage" class="success-message">
+      {{ successMessage }}
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="errorMessage" class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
+      {{ errorMessage }}
+    </div>
+
+    <!-- Email -->
+    <div class="form-group">
+      <label class="form-label" for="email">Email *</label>
+      <input
+        type="email"
+        id="email"
+        formControlName="email"
+        class="form-control"
+        [class.error]="submitted && f['email'].invalid"
+        placeholder="Enter your email address"
+      />
+      <span class="error-message" *ngIf="getFieldError('email')">
+        {{ getFieldError('email') }}
+      </span>
+    </div>
+
+    <!-- Password -->
+    <div class="form-group">
+      <label class="form-label" for="password">Password *</label>
+      <input
+        type="password"
+        id="password"
+        formControlName="password"
+        class="form-control"
+        [class.error]="submitted && f['password'].invalid"
+        placeholder="Enter your password"
+      />
+      <span class="error-message" *ngIf="getFieldError('password')">
+        {{ getFieldError('password') }}
+      </span>
+    </div>
+
+    <!-- Submit Button -->
+    <button
+      type="submit"
+      class="btn btn-primary"
+      [disabled]="isLoading"
+    >
+      <span *ngIf="!isLoading">Sign In</span>
+      <span *ngIf="isLoading">Signing In...</span>
+    </button>
+
+    <!-- Sign Up Link -->
+    <div style="text-align: center; margin-top: 20px;">
+      <p style="color: #666; font-size: 14px;">
+        Don't have an account? 
+        <a routerLink="/signup" style="color: #6366f1; text-decoration: none; font-weight: 500;">
+          Sign up
+        </a>
+      </p>
+    </div>
+
+  </form>
+</div>
+
