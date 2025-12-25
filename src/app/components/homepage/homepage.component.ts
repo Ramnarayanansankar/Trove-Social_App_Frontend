@@ -113,6 +113,6 @@ export class HomepageComponent implements OnInit {
 
   logout(): void {
     localStorage.removeItem('currentUser');
-    this.router.navigate(['/signup']);
+    this.router.navigate(['/login']);
   }
 }

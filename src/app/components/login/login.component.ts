@@ -73,6 +73,19 @@ export class LoginComponent implements OnInit {
       next: (response) => {
         this.isLoading = false;
         console.log('Login Response received:', response);
+        console.log('Full response structure:', JSON.stringify(response, null, 2));
+        
+        // Check for existing user data in localStorage (fallback if backend doesn't return firstName)
+        let existingUserData = null;
+        try {
+          const storedUser = localStorage.getItem('currentUser');
+          if (storedUser) {
+            existingUserData = JSON.parse(storedUser);
+            console.log('Existing user data from localStorage:', existingUserData);
+          }
+        } catch (e) {
+          console.warn('Could not parse existing user data');
+        }
         
         // Store user data in localStorage
         // Extract user data from backend response
@@ -84,18 +97,23 @@ export class LoginComponent implements OnInit {
                          response?.user?.username ||
                          response?.username ||
                          response?.data?.username ||
+                         existingUserData?.firstName || // Fallback to existing data
                          'User';
         const lastName = response?.user?.lastName || 
                         response?.lastName || 
                         response?.data?.lastName ||
                         response?.data?.user?.lastName ||
+                        existingUserData?.lastName || // Fallback to existing data
                         '';
+        
+        console.log('Extracted firstName:', firstName, 'from response');
         
         const userData = {
           email: loginData.email,
           firstName: firstName,
           lastName: lastName
         };
+        console.log('Storing user data in localStorage:', userData);
         localStorage.setItem('currentUser', JSON.stringify(userData));
         
         // Show success message briefly before navigation
