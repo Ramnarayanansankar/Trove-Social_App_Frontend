@@ -75,10 +75,26 @@ export class LoginComponent implements OnInit {
         console.log('Login Response received:', response);
         
         // Store user data in localStorage
-        // In a real app, you'd get this from the backend response
+        // Extract user data from backend response
+        // Handle different possible response structures
+        const firstName = response?.user?.firstName || 
+                         response?.firstName || 
+                         response?.data?.firstName ||
+                         response?.data?.user?.firstName ||
+                         response?.user?.username ||
+                         response?.username ||
+                         response?.data?.username ||
+                         'User';
+        const lastName = response?.user?.lastName || 
+                        response?.lastName || 
+                        response?.data?.lastName ||
+                        response?.data?.user?.lastName ||
+                        '';
+        
         const userData = {
           email: loginData.email,
-          firstName: response.user?.firstName || 'User'
+          firstName: firstName,
+          lastName: lastName
         };
         localStorage.setItem('currentUser', JSON.stringify(userData));
         
