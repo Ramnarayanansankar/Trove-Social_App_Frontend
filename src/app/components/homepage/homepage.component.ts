@@ -1,19 +1,18 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
 
-interface Post {
-  authorName: string;
-  authorInitials: string;
-  timeAgo: string;
-  content: string;
-  image?: string;
-  likes: number;
-  comments: number;
+interface Notification {
+  message: string;
+  actions?: {
+    accept: string;
+    ignore: string;
+  };
 }
 
-interface Contact {
-  name: string;
-  initials: string;
+interface Stats {
+  followers: number;
+  following: number;
+  posts: number;
 }
 
 @Component({
@@ -24,58 +23,32 @@ interface Contact {
 export class HomepageComponent implements OnInit {
   userName: string = 'User';
   userInitials: string = 'U';
+  showNotifications: boolean = false;
+  notificationCount: number = 0;
   
-  samplePosts: Post[] = [
+  stats: Stats = {
+    followers: 120,
+    following: 180,
+    posts: 45
+  };
+
+  photos: any[] = Array(6).fill(null); // 6 placeholder photos
+
+  notifications: Notification[] = [
     {
-      authorName: 'John Doe',
-      authorInitials: 'JD',
-      timeAgo: '2 hours ago',
-      content: 'Just finished an amazing workout! 💪 Feeling energized and ready to take on the day!',
-      likes: 45,
-      comments: 12
+      message: 'Rhea invited you to view her photos',
+      actions: {
+        accept: 'Accept',
+        ignore: 'Ignore'
+      }
     },
     {
-      authorName: 'Sarah Smith',
-      authorInitials: 'SS',
-      timeAgo: '5 hours ago',
-      content: 'Beautiful sunset from my evening walk 🌅',
-      image: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=800',
-      likes: 128,
-      comments: 34
-    },
-    {
-      authorName: 'Mike Johnson',
-      authorInitials: 'MJ',
-      timeAgo: '1 day ago',
-      content: 'Excited to announce that I\'ve joined Trove Social! Looking forward to connecting with all of you! 🎉',
-      likes: 89,
-      comments: 23
-    },
-    {
-      authorName: 'Emily Davis',
-      authorInitials: 'ED',
-      timeAgo: '2 days ago',
-      content: 'Coffee and coding - the perfect combination ☕💻',
-      likes: 67,
-      comments: 15
+      message: 'Arun requested access to your photos',
+      actions: {
+        accept: 'Approve',
+        ignore: 'Decline'
+      }
     }
-  ];
-
-  sampleContacts: Contact[] = [
-    { name: 'Alex Brown', initials: 'AB' },
-    { name: 'Lisa Wilson', initials: 'LW' },
-    { name: 'David Lee', initials: 'DL' },
-    { name: 'Emma Taylor', initials: 'ET' },
-    { name: 'Chris Anderson', initials: 'CA' },
-    { name: 'Olivia Martinez', initials: 'OM' }
-  ];
-
-  trendingTopics: string[] = [
-    '#TechNews',
-    '#WeekendVibes',
-    '#MotivationMonday',
-    '#ThrowbackThursday',
-    '#FoodieFriday'
   ];
 
   constructor(private router: Router) { }
@@ -100,15 +73,41 @@ export class HomepageComponent implements OnInit {
         this.userInitials = 'U';
       }
     } else {
-      // If no user data found, redirect to signup
-      console.warn('No user data found, redirecting to signup');
-      this.router.navigate(['/signup']);
+      // If no user data found, redirect to login
+      console.warn('No user data found, redirecting to login');
+      this.router.navigate(['/login']);
     }
+
+    // Update notification count
+    this.updateNotificationCount();
   }
 
-  openCreatePostModal(): void {
-    // TODO: Implement create post modal
-    console.log('Open create post modal');
+  toggleNotifications(): void {
+    this.showNotifications = !this.showNotifications;
+  }
+
+  updateNotificationCount(): void {
+    this.notificationCount = this.notifications.length;
+  }
+
+  handleNotificationAction(notification: Notification, action: 'accept' | 'ignore'): void {
+    console.log(`Notification action: ${action}`, notification);
+    
+    // Remove notification from list
+    const index = this.notifications.indexOf(notification);
+    if (index > -1) {
+      this.notifications.splice(index, 1);
+      this.updateNotificationCount();
+    }
+
+    // TODO: Implement actual API call to handle notification action
+    if (action === 'accept') {
+      // Handle accept action
+      console.log('Accepted notification');
+    } else {
+      // Handle ignore action
+      console.log('Ignored notification');
+    }
   }
 
   logout(): void {

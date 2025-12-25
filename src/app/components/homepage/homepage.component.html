@@ -1,153 +1,57 @@
 <div class="homepage-container">
-  <!-- Header/Navigation -->
-  <header class="header">
-    <div class="header-content">
-      <div class="logo">
-        <h1>📱 Trove</h1>
+  <!-- HEADER -->
+  <div class="header">
+    <div>Welcome, {{ userName }}</div>
+    <div class="header-right">
+      <div class="bell" (click)="toggleNotifications()">
+        🔔
+        <div class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</div>
       </div>
-      <nav class="nav-menu">
-        <a href="#" class="nav-item active">
-          <span class="icon">🏠</span>
-          <span>Home</span>
-        </a>
-        <a href="#" class="nav-item">
-          <span class="icon">👥</span>
-          <span>Friends</span>
-        </a>
-        <a href="#" class="nav-item">
-          <span class="icon">💬</span>
-          <span>Messages</span>
-        </a>
-        <a href="#" class="nav-item">
-          <span class="icon">🔔</span>
-          <span>Notifications</span>
-        </a>
-      </nav>
-      <div class="user-section">
-        <div class="user-profile">
-          <div class="avatar">{{ userInitials }}</div>
-          <span class="username">Welcome, {{ userName }}!</span>
-        </div>
-        <button class="logout-btn" (click)="logout()">Logout</button>
+      <div class="avatar" (click)="logout()">{{ userInitials }}</div>
+    </div>
+  </div>
+
+  <!-- CENTERED STATS -->
+  <div class="stats">
+    <div class="stat">
+      <strong>{{ stats.followers }}</strong>
+      <span>Followers</span>
+    </div>
+    <div class="stat">
+      <strong>{{ stats.following }}</strong>
+      <span>Following</span>
+    </div>
+    <div class="stat">
+      <strong>{{ stats.posts }}</strong>
+      <span>Posts</span>
+    </div>
+  </div>
+
+  <!-- PHOTO GRID -->
+  <div class="grid">
+    <div class="photo" *ngFor="let photo of photos"></div>
+  </div>
+
+  <!-- NOTIFICATIONS DRAWER -->
+  <div class="drawer" [class.show]="showNotifications">
+    <div class="drawer-header">
+      <h3>Notifications</h3>
+      <button class="close-btn" (click)="toggleNotifications()">×</button>
+    </div>
+
+    <div class="notification" *ngFor="let notification of notifications">
+      <div class="notification-content">{{ notification.message }}</div>
+      <div class="actions" *ngIf="notification.actions">
+        <button class="primary" (click)="handleNotificationAction(notification, 'accept')">
+          {{ notification.actions.accept }}
+        </button>
+        <button class="secondary" (click)="handleNotificationAction(notification, 'ignore')">
+          {{ notification.actions.ignore }}
+        </button>
       </div>
     </div>
-  </header>
+  </div>
 
-  <!-- Main Content -->
-  <main class="main-content">
-    <!-- Left Sidebar -->
-    <aside class="sidebar left-sidebar">
-      <div class="sidebar-section">
-        <h3>Quick Links</h3>
-        <ul class="sidebar-menu">
-          <li><a href="#"><span class="icon">📰</span> News Feed</a></li>
-          <li><a href="#"><span class="icon">👤</span> Profile</a></li>
-          <li><a href="#"><span class="icon">📸</span> Photos</a></li>
-          <li><a href="#"><span class="icon">🎥</span> Videos</a></li>
-          <li><a href="#"><span class="icon">🎮</span> Games</a></li>
-          <li><a href="#"><span class="icon">⚙️</span> Settings</a></li>
-        </ul>
-      </div>
-      
-      <div class="sidebar-section">
-        <h3>Your Pages</h3>
-        <ul class="sidebar-menu">
-          <li><a href="#"><span class="icon">📄</span> Create Page</a></li>
-        </ul>
-      </div>
-    </aside>
-
-    <!-- Center Feed -->
-    <section class="feed-section">
-      <!-- Create Post -->
-      <div class="create-post-card">
-        <div class="post-header">
-          <div class="avatar">{{ userInitials }}</div>
-          <input 
-            type="text" 
-            placeholder="What's on your mind, {{ userName }}?" 
-            class="post-input"
-            (click)="openCreatePostModal()"
-          />
-        </div>
-        <div class="post-actions">
-          <button class="action-btn">
-            <span class="icon">📷</span>
-            <span>Photo</span>
-          </button>
-          <button class="action-btn">
-            <span class="icon">🎥</span>
-            <span>Video</span>
-          </button>
-          <button class="action-btn">
-            <span class="icon">😊</span>
-            <span>Feeling</span>
-          </button>
-        </div>
-      </div>
-
-      <!-- Posts Feed -->
-      <div class="posts-container">
-        <div class="post-card" *ngFor="let post of samplePosts">
-          <div class="post-header">
-            <div class="post-author">
-              <div class="avatar">{{ post.authorInitials }}</div>
-              <div class="author-info">
-                <h4>{{ post.authorName }}</h4>
-                <span class="post-time">{{ post.timeAgo }}</span>
-              </div>
-            </div>
-            <button class="more-btn">⋯</button>
-          </div>
-          
-          <div class="post-content">
-            <p>{{ post.content }}</p>
-            <img *ngIf="post.image" [src]="post.image" [alt]="post.content" class="post-image" />
-          </div>
-          
-          <div class="post-stats">
-            <span class="likes">{{ post.likes }} likes</span>
-            <span class="comments">{{ post.comments }} comments</span>
-          </div>
-          
-          <div class="post-actions-bar">
-            <button class="action-btn-bar">
-              <span class="icon">👍</span>
-              <span>Like</span>
-            </button>
-            <button class="action-btn-bar">
-              <span class="icon">💬</span>
-              <span>Comment</span>
-            </button>
-            <button class="action-btn-bar">
-              <span class="icon">📤</span>
-              <span>Share</span>
-            </button>
-          </div>
-        </div>
-      </div>
-    </section>
-
-    <!-- Right Sidebar -->
-    <aside class="sidebar right-sidebar">
-      <div class="sidebar-section">
-        <h3>Contacts</h3>
-        <ul class="contacts-list">
-          <li *ngFor="let contact of sampleContacts" class="contact-item">
-            <div class="avatar small">{{ contact.initials }}</div>
-            <span>{{ contact.name }}</span>
-          </li>
-        </ul>
-      </div>
-      
-      <div class="sidebar-section">
-        <h3>Trending</h3>
-        <ul class="trending-list">
-          <li *ngFor="let trend of trendingTopics">
-            <a href="#">{{ trend }}</a>
-          </li>
-        </ul>
-      </div>
-    </aside>
-  </main>
+  <!-- Drawer overlay -->
+  <div class="drawer-overlay" [class.show]="showNotifications" (click)="toggleNotifications()"></div>
 </div>
