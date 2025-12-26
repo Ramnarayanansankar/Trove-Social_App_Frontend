@@ -50,5 +50,16 @@ export class SignupService {
       responseType: 'text'
     });
   }
+
+  checkPhoneNumberExists(phoneNumber: string): Observable<any> {
+    const apiUrl = `${this.baseUrl}/checkphonenumber`;
+    const params = { phoneNumber: phoneNumber };
+    console.log('Checking phone number existence:', apiUrl, params);
+    // Backend returns plain text, so we use responseType: 'text'
+    return this.http.get(apiUrl, { 
+      params: params,
+      responseType: 'text'
+    });
+  }
 }
 

@@ -106,11 +106,26 @@
           id="phoneNumber"
           formControlName="phoneNumber"
           class="form-control"
-          [class.error]="submitted && f['phoneNumber'].invalid"
+          [class.error]="(submitted || f['phoneNumber'].dirty || f['phoneNumber'].touched) && f['phoneNumber'].invalid"
           placeholder="+1 (555) 123-4567"
         />
-        <span class="error-message" *ngIf="getFieldError('phoneNumber')">
+        <!-- Phone number format errors (only show if not phoneNumberExists error) -->
+        <span class="error-message" *ngIf="getFieldError('phoneNumber') && !f['phoneNumber'].errors?.['phoneNumberExists']">
           {{ getFieldError('phoneNumber') }}
+        </span>
+        <!-- Phone number availability status -->
+        <span *ngIf="phoneNumberChecking && f['phoneNumber'].valid && !f['phoneNumber'].errors?.['pattern']" 
+              style="color: #667eea; font-size: 13px; margin-top: 5px; display: block;">
+          <span style="display: inline-block; width: 12px; height: 12px; border: 2px solid #667eea; border-top-color: transparent; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 5px;"></span>
+          Checking phone number availability...
+        </span>
+        <span *ngIf="!phoneNumberChecking && phoneNumberAvailable === true && f['phoneNumber'].valid && !f['phoneNumber'].errors?.['pattern']" 
+              style="color: #10b981; font-size: 13px; margin-top: 5px; display: block;">
+          ✓ Phone number is available
+        </span>
+        <!-- Phone number exists error (show only once) -->
+        <span class="error-message" *ngIf="!phoneNumberChecking && (f['phoneNumber'].errors?.['phoneNumberExists'] || phoneNumberAvailable === false)">
+          ✗ This phone number is already registered. Please use a different phone number.
         </span>
       </div>
 
