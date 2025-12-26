@@ -1,6 +1,8 @@
 import { Component, OnInit } from '@angular/core';
-import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { AbstractControl, AsyncValidatorFn, FormBuilder, FormGroup, ValidationErrors, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
+import { Observable, of, timer } from 'rxjs';
+import { catchError, debounceTime, distinctUntilChanged, map, switchMap } from 'rxjs/operators';
 import { SignupService, SignupData } from '../../services/signup.service';
 
 @Component({
@@ -14,6 +16,8 @@ export class SignupComponent implements OnInit {
   successMessage = '';
   errorMessage = '';
   isLoading = false;
+  emailChecking = false;
+  emailAvailable: boolean | null = null;
 
   countries = [
     'United States', 'India', 'United Kingdom', 'Canada', 'Australia',
@@ -753,7 +757,7 @@ export class SignupComponent implements OnInit {
     this.signupForm = this.formBuilder.group({
       firstName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-Z]+$/)]],
       lastName: ['', [Validators.required, Validators.minLength(2), Validators.pattern(/^[a-zA-Z]+$/)]],
-      email: ['', [Validators.required, Validators.email]],
+      email: ['', [Validators.required, Validators.email], [this.emailExistsValidator()]],
       password: ['', [Validators.required, Validators.minLength(8), Validators.pattern(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]/)]],
       phoneNumber: ['', [Validators.required, Validators.pattern(/^[+]?[(]?[0-9]{1,4}[)]?[-\s.]?[(]?[0-9]{1,4}[)]?[-\s.]?[0-9]{1,9}$/)]],
       gender: ['', Validators.required],
@@ -773,6 +777,40 @@ export class SignupComponent implements OnInit {
     // Watch for state changes
     this.signupForm.get('state')?.valueChanges.subscribe(state => {
       this.onStateChange(state);
+    });
+
+    // Watch for email changes to reset availability status
+    this.signupForm.get('email')?.valueChanges.subscribe(() => {
+      // Reset status when email value changes
+      this.emailAvailable = null;
+      this.emailChecking = false;
+    });
+
+    // Watch for email validation status changes
+    this.signupForm.get('email')?.statusChanges.subscribe(status => {
+      const emailControl = this.signupForm.get('email');
+      
+      if (status === 'PENDING') {
+        // Async validation in progress
+        this.emailChecking = true;
+        this.emailAvailable = null;
+      } else if (status === 'VALID') {
+        // Validation passed - check if it's because email doesn't exist
+        this.emailChecking = false;
+        if (emailControl && !emailControl.errors?.['emailExists'] && emailControl.value) {
+          this.emailAvailable = true;
+        }
+      } else if (status === 'INVALID') {
+        // Validation failed
+        this.emailChecking = false;
+        if (emailControl?.errors?.['emailExists']) {
+          // Email exists error
+          this.emailAvailable = false;
+        } else {
+          // Other validation errors (format, required, etc.)
+          this.emailAvailable = null;
+        }
+      }
     });
   }
 
@@ -810,6 +848,242 @@ export class SignupComponent implements OnInit {
     return null;
   }
 
+  emailExistsValidator(): AsyncValidatorFn {
+    return (control: AbstractControl): Observable<ValidationErrors | null> => {
+      // Don't check if email is empty
+      if (!control.value || control.value.trim() === '') {
+        return of(null);
+      }
+
+      // Check if email format is invalid (sync validators should have run first)
+      // But we'll also validate format here as a safety check
+      const emailPattern = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailPattern.test(control.value)) {
+        console.log('Email format invalid, skipping existence check');
+        return of(null);
+      }
+
+      // Add a small delay to debounce rapid typing
+      return timer(800).pipe(
+        switchMap(() => {
+          // Double-check email is still valid and not empty
+          if (!control.value || !emailPattern.test(control.value)) {
+            return of(null);
+          }
+
+          console.log('🔍 Checking email existence for:', control.value);
+
+          return this.signupService.checkEmailExists(control.value).pipe(
+            map((response: any) => {
+              console.log('=== Email Check API Response ===');
+              console.log('Full response:', response);
+              console.log('Response type:', typeof response);
+              console.log('Response value:', response);
+              
+              // Handle plain text response (backend returns "Email exists in the database." as text)
+              let responseText = '';
+              if (typeof response === 'string') {
+                responseText = response;
+                console.log('Response is plain text:', responseText);
+              } else if (response?.text) {
+                responseText = response.text;
+                console.log('Response text from object:', responseText);
+              }
+              
+              // Check if response text indicates email exists
+              if (responseText) {
+                const lowerText = responseText.toLowerCase();
+                if (lowerText.includes('email exists') || 
+                    lowerText.includes('exists in the database') ||
+                    lowerText.includes('already exists') ||
+                    lowerText.includes('already registered')) {
+                  console.log('✅ Email exists (detected from plain text: "' + responseText + '")');
+                  return { emailExists: true };
+                }
+                // If text says email is available
+                if (lowerText.includes('email available') || 
+                    lowerText.includes('email does not exist') ||
+                    lowerText.includes('not found') ||
+                    lowerText.includes('available')) {
+                  console.log('✅ Email is available (detected from plain text: "' + responseText + '")');
+                  return null;
+                }
+              }
+              
+              // Handle different possible API response structures
+              // Check if response indicates email exists
+              let emailExists = false;
+              
+              // Direct boolean or string (true means exists)
+              if (response === true || response === 'true' || response === 'TRUE') {
+                emailExists = true;
+                console.log('Email exists: Direct boolean/string true');
+              }
+              // Direct boolean false (email doesn't exist - this is fine, continue)
+              else if (response === false || response === 'false' || response === 'FALSE') {
+                emailExists = false;
+                console.log('Email available: Direct boolean/string false');
+              }
+              // Object with exists property
+              else if (response?.exists === true || 
+                       response?.emailExists === true || 
+                       response?.isExists === true ||
+                       response?.emailAlreadyExists === true ||
+                       response?.exists === 'true' ||
+                       response?.emailExists === 'true') {
+                emailExists = true;
+                console.log('Email exists: Object property (exists/emailExists/isExists)');
+              }
+              // Object with exists = false (email available)
+              else if (response?.exists === false || 
+                       response?.emailExists === false ||
+                       response?.exists === 'false') {
+                emailExists = false;
+                console.log('Email available: Object property false');
+              }
+              // Status field
+              else if (response?.status === 'exists' || 
+                       response?.status === 'EXISTS' ||
+                       response?.status === 'already_exists' ||
+                       response?.status === 'ALREADY_EXISTS') {
+                emailExists = true;
+                console.log('Email exists: Status field');
+              }
+              // Available field (false means exists, true means available)
+              else if (response?.available === false || 
+                       response?.isAvailable === false ||
+                       response?.available === 'false' ||
+                       response?.available === 'FALSE') {
+                emailExists = true;
+                console.log('Email exists: Available field is false');
+              }
+              // Available = true means email is available
+              else if (response?.available === true || 
+                       response?.isAvailable === true ||
+                       response?.available === 'true') {
+                emailExists = false;
+                console.log('Email available: Available field is true');
+              }
+              // Nested data object
+              else if (response?.data?.exists === true || 
+                       response?.data?.emailExists === true ||
+                       response?.result?.exists === true ||
+                       response?.body?.exists === true) {
+                emailExists = true;
+                console.log('Email exists: Nested data object');
+              }
+              // Check all string/number properties for common patterns
+              else if (typeof response === 'object' && response !== null) {
+                // Check all properties for existence indicators
+                const responseStr = JSON.stringify(response).toLowerCase();
+                if (responseStr.includes('"exists":true') || 
+                    responseStr.includes('"emailexists":true') ||
+                    responseStr.includes('"alreadyexists":true')) {
+                  emailExists = true;
+                  console.log('Email exists: Found in stringified response');
+                }
+              }
+              
+              // Check message strings
+              const message = response?.message || 
+                             response?.msg || 
+                             response?.data?.message || 
+                             response?.error?.message || '';
+              if (message && typeof message === 'string') {
+                const lowerMessage = message.toLowerCase();
+                if (lowerMessage.includes('exists') || 
+                    lowerMessage.includes('already') || 
+                    lowerMessage.includes('taken') ||
+                    lowerMessage.includes('registered') ||
+                    lowerMessage.includes('found') ||
+                    lowerMessage.includes('duplicate')) {
+                  emailExists = true;
+                  console.log('Email exists: Message indicates exists');
+                }
+              }
+              
+              console.log('Final email exists result:', emailExists);
+              
+              if (emailExists) {
+                console.log('❌ Email already exists - returning validation error');
+                return { emailExists: true };
+              }
+              
+              console.log('✅ Email is available');
+              return null;
+            }),
+            catchError((error) => {
+              console.log('❌ Email check API error:', error);
+              console.log('Error status:', error.status);
+              console.log('Error body:', error.error);
+              console.log('Full error object:', JSON.stringify(error, null, 2));
+              
+              // Handle the case where backend returns plain text instead of JSON
+              // This happens when backend returns "Email exists in the database." as plain text
+              if (error.status === 200) {
+                // Check if error.error contains text indicating email exists
+                const errorText = error.error?.text || 
+                                 error.error?.error?.text || 
+                                 (typeof error.error === 'string' ? error.error : '') ||
+                                 '';
+                
+                console.log('Error text found:', errorText);
+                
+                if (errorText) {
+                  const lowerText = errorText.toLowerCase();
+                  if (lowerText.includes('email exists') || 
+                      lowerText.includes('exists in the database') ||
+                      lowerText.includes('already exists') ||
+                      lowerText.includes('already registered') ||
+                      lowerText.includes('email is taken')) {
+                    console.log('✅ Email exists (detected from plain text response)');
+                    return of({ emailExists: true });
+                  }
+                  // If text says email doesn't exist or is available
+                  if (lowerText.includes('email available') || 
+                      lowerText.includes('email does not exist') ||
+                      lowerText.includes('not found')) {
+                    console.log('✅ Email is available (detected from plain text response)');
+                    return of(null);
+                  }
+                }
+                
+                // Also check error.error object structure
+                if (error.error) {
+                  const emailExists = 
+                    error.error === true ||
+                    error.error?.exists === true ||
+                    error.error?.emailExists === true ||
+                    error.error?.status === 'exists' ||
+                    (error.error?.message && typeof error.error.message === 'string' && (
+                      error.error.message.toLowerCase().includes('exists') ||
+                      error.error.message.toLowerCase().includes('already') ||
+                      error.error.message.toLowerCase().includes('taken')
+                    ));
+                  if (emailExists) {
+                    console.log('✅ Email exists (from error.error object)');
+                    return of({ emailExists: true });
+                  }
+                }
+              }
+              
+              // If API returns 409 Conflict, email likely exists
+              if (error.status === 409) {
+                console.log('✅ Email exists (409 Conflict)');
+                return of({ emailExists: true });
+              }
+              
+              // For other errors (network, 500, etc.), don't block the form
+              // Return null to allow form submission (backend will validate on submit)
+              console.warn('⚠️ Error checking email existence - allowing form submission:', error);
+              return of(null);
+            })
+          );
+        })
+      );
+    };
+  }
+
   get f() {
     return this.signupForm.controls;
   }
@@ -822,6 +1096,9 @@ export class SignupComponent implements OnInit {
       }
       if (field.errors['email']) {
         return 'Please enter a valid email address';
+      }
+      if (field.errors['emailExists']) {
+        return 'This email is already registered. Please use a different email address.';
       }
       if (field.errors['minlength']) {
         return `${this.getFieldLabel(fieldName)} must be at least ${field.errors['minlength'].requiredLength} characters`;

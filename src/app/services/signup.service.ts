@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
-import { HttpClient, HttpHeaders } from '@angular/common/http';
-import { Observable } from 'rxjs';
+import { HttpClient, HttpHeaders, HttpErrorResponse } from '@angular/common/http';
+import { Observable, throwError } from 'rxjs';
+import { catchError } from 'rxjs/operators';
 
 export interface SignupData {
   firstName: string;
@@ -37,6 +38,17 @@ export class SignupService {
     console.log('Calling API:', apiUrl);
     console.log('Sending data:', userData);
     return this.http.post<any>(apiUrl, userData, this.httpOptions);
+  }
+
+  checkEmailExists(email: string): Observable<any> {
+    const apiUrl = `${this.baseUrl}/checkemail`;
+    const params = { email: email };
+    console.log('Checking email existence:', apiUrl, params);
+    // Backend returns plain text, so we use responseType: 'text'
+    return this.http.get(apiUrl, { 
+      params: params,
+      responseType: 'text'
+    });
   }
 }
 
