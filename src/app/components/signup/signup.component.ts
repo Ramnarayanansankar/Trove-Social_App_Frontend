@@ -21,6 +21,9 @@ export class SignupComponent implements OnInit {
   emailAvailable: boolean | null = null;
   phoneNumberChecking = false;
   phoneNumberAvailable: boolean | null = null;
+  profilePictureFile: File | null = null;
+  profilePicturePreview: string | null = null;
+  profilePictureError: string | null = null;
 
   countries = [
     'United States', 'India', 'United Kingdom', 'Canada', 'Australia',
@@ -766,8 +769,8 @@ export class SignupComponent implements OnInit {
       gender: ['', Validators.required],
       dob: ['', [Validators.required, this.dateValidator]],
       country: ['', Validators.required],
-      state: ['', Validators.required],
-      city: ['', Validators.required],
+      state: [{value: '', disabled: true}, Validators.required],
+      city: [{value: '', disabled: true}, Validators.required],
       address: ['', [Validators.required, Validators.minLength(10)]],
       pincode: ['', [Validators.required, Validators.pattern(/^\d{5,6}$/)]]
     });
@@ -855,6 +858,14 @@ export class SignupComponent implements OnInit {
     this.availableStates = this.states[country] || [];
     this.signupForm.patchValue({ state: '', city: '' });
     this.availableCities = [];
+    
+    // Enable/disable state and city controls based on availability
+    if (this.availableStates.length > 0) {
+      this.signupForm.get('state')?.enable();
+    } else {
+      this.signupForm.get('state')?.disable();
+    }
+    this.signupForm.get('city')?.disable();
   }
 
   onStateChange(state: string): void {
@@ -863,6 +874,13 @@ export class SignupComponent implements OnInit {
     // Try composite key first (for cases like Pakistan-Punjab), then fallback to state name
     this.availableCities = this.cities[stateKey] || this.cities[state] || [];
     this.signupForm.patchValue({ city: '' });
+    
+    // Enable/disable city control based on availability
+    if (this.availableCities.length > 0) {
+      this.signupForm.get('city')?.enable();
+    } else {
+      this.signupForm.get('city')?.disable();
+    }
   }
 
   dateValidator(control: any) {
@@ -912,204 +930,26 @@ export class SignupComponent implements OnInit {
 
           return this.signupService.checkEmailExists(control.value).pipe(
             map((response: any) => {
-              console.log('=== Email Check API Response ===');
-              console.log('Full response:', response);
-              console.log('Response type:', typeof response);
-              console.log('Response value:', response);
-              
-              // Handle plain text response (backend returns "Email exists in the database." as text)
-              let responseText = '';
-              if (typeof response === 'string') {
-                responseText = response;
-                console.log('Response is plain text:', responseText);
-              } else if (response?.text) {
-                responseText = response.text;
-                console.log('Response text from object:', responseText);
+              console.log('=== Email Check API Response ==='); 
+              console.log('Check email existence Response:', response);
+              if(response.status === 200){
+                return { emailExists: false };
               }
-              
-              // Check if response text indicates email exists
-              if (responseText) {
-                const lowerText = responseText.toLowerCase();
-                if (lowerText.includes('email exists') || 
-                    lowerText.includes('exists in the database') ||
-                    lowerText.includes('already exists') ||
-                    lowerText.includes('already registered')) {
-                  console.log('✅ Email exists (detected from plain text: "' + responseText + '")');
-                  return { emailExists: true };
-                }
-                // If text says email is available
-                if (lowerText.includes('email available') || 
-                    lowerText.includes('email does not exist') ||
-                    lowerText.includes('not found') ||
-                    lowerText.includes('available')) {
-                  console.log('✅ Email is available (detected from plain text: "' + responseText + '")');
-                  return null;
-                }
-              }
-              
-              // Handle different possible API response structures
-              // Check if response indicates email exists
-              let emailExists = false;
-              
-              // Direct boolean or string (true means exists)
-              if (response === true || response === 'true' || response === 'TRUE') {
-                emailExists = true;
-                console.log('Email exists: Direct boolean/string true');
-              }
-              // Direct boolean false (email doesn't exist - this is fine, continue)
-              else if (response === false || response === 'false' || response === 'FALSE') {
-                emailExists = false;
-                console.log('Email available: Direct boolean/string false');
-              }
-              // Object with exists property
-              else if (response?.exists === true || 
-                       response?.emailExists === true || 
-                       response?.isExists === true ||
-                       response?.emailAlreadyExists === true ||
-                       response?.exists === 'true' ||
-                       response?.emailExists === 'true') {
-                emailExists = true;
-                console.log('Email exists: Object property (exists/emailExists/isExists)');
-              }
-              // Object with exists = false (email available)
-              else if (response?.exists === false || 
-                       response?.emailExists === false ||
-                       response?.exists === 'false') {
-                emailExists = false;
-                console.log('Email available: Object property false');
-              }
-              // Status field
-              else if (response?.status === 'exists' || 
-                       response?.status === 'EXISTS' ||
-                       response?.status === 'already_exists' ||
-                       response?.status === 'ALREADY_EXISTS') {
-                emailExists = true;
-                console.log('Email exists: Status field');
-              }
-              // Available field (false means exists, true means available)
-              else if (response?.available === false || 
-                       response?.isAvailable === false ||
-                       response?.available === 'false' ||
-                       response?.available === 'FALSE') {
-                emailExists = true;
-                console.log('Email exists: Available field is false');
-              }
-              // Available = true means email is available
-              else if (response?.available === true || 
-                       response?.isAvailable === true ||
-                       response?.available === 'true') {
-                emailExists = false;
-                console.log('Email available: Available field is true');
-              }
-              // Nested data object
-              else if (response?.data?.exists === true || 
-                       response?.data?.emailExists === true ||
-                       response?.result?.exists === true ||
-                       response?.body?.exists === true) {
-                emailExists = true;
-                console.log('Email exists: Nested data object');
-              }
-              // Check all string/number properties for common patterns
-              else if (typeof response === 'object' && response !== null) {
-                // Check all properties for existence indicators
-                const responseStr = JSON.stringify(response).toLowerCase();
-                if (responseStr.includes('"exists":true') || 
-                    responseStr.includes('"emailexists":true') ||
-                    responseStr.includes('"alreadyexists":true')) {
-                  emailExists = true;
-                  console.log('Email exists: Found in stringified response');
-                }
-              }
-              
-              // Check message strings
-              const message = response?.message || 
-                             response?.msg || 
-                             response?.data?.message || 
-                             response?.error?.message || '';
-              if (message && typeof message === 'string') {
-                const lowerMessage = message.toLowerCase();
-                if (lowerMessage.includes('exists') || 
-                    lowerMessage.includes('already') || 
-                    lowerMessage.includes('taken') ||
-                    lowerMessage.includes('registered') ||
-                    lowerMessage.includes('found') ||
-                    lowerMessage.includes('duplicate')) {
-                  emailExists = true;
-                  console.log('Email exists: Message indicates exists');
-                }
-              }
-              
-              console.log('Final email exists result:', emailExists);
-              
-              if (emailExists) {
-                console.log('❌ Email already exists - returning validation error');
-                return { emailExists: true };
-              }
-              
-              console.log('✅ Email is available');
               return null;
             }),
             catchError((error) => {
-              console.log('❌ Email check API error:', error);
-              console.log('Error status:', error.status);
-              console.log('Error body:', error.error);
-              console.log('Full error object:', JSON.stringify(error, null, 2));
+           
               
               // Handle the case where backend returns plain text instead of JSON
               // This happens when backend returns "Email exists in the database." as plain text
-              if (error.status === 200) {
+              if (error.status === 400) {
                 // Check if error.error contains text indicating email exists
-                const errorText = error.error?.text || 
-                                 error.error?.error?.text || 
-                                 (typeof error.error === 'string' ? error.error : '') ||
-                                 '';
-                
-                console.log('Error text found:', errorText);
-                
-                if (errorText) {
-                  const lowerText = errorText.toLowerCase();
-                  if (lowerText.includes('email exists') || 
-                      lowerText.includes('exists in the database') ||
-                      lowerText.includes('already exists') ||
-                      lowerText.includes('already registered') ||
-                      lowerText.includes('email is taken')) {
-                    console.log('✅ Email exists (detected from plain text response)');
-                    return of({ emailExists: true });
-                  }
-                  // If text says email doesn't exist or is available
-                  if (lowerText.includes('email available') || 
-                      lowerText.includes('email does not exist') ||
-                      lowerText.includes('not found')) {
-                    console.log('✅ Email is available (detected from plain text response)');
-                    return of(null);
-                  }
-                }
-                
-                // Also check error.error object structure
-                if (error.error) {
-                  const emailExists = 
-                    error.error === true ||
-                    error.error?.exists === true ||
-                    error.error?.emailExists === true ||
-                    error.error?.status === 'exists' ||
-                    (error.error?.message && typeof error.error.message === 'string' && (
-                      error.error.message.toLowerCase().includes('exists') ||
-                      error.error.message.toLowerCase().includes('already') ||
-                      error.error.message.toLowerCase().includes('taken')
-                    ));
-                  if (emailExists) {
-                    console.log('✅ Email exists (from error.error object)');
-                    return of({ emailExists: true });
-                  }
-                }
-              }
-              
-              // If API returns 409 Conflict, email likely exists
-              if (error.status === 409) {
-                console.log('✅ Email exists (409 Conflict)');
+                console.log('✅ Email exists (400 Bad Request)');
                 return of({ emailExists: true });
+                
+      
+
               }
-              
               // For other errors (network, 500, etc.), don't block the form
               // Return null to allow form submission (backend will validate on submit)
               console.warn('⚠️ Error checking email existence - allowing form submission:', error);
@@ -1152,34 +992,52 @@ export class SignupComponent implements OnInit {
               console.log('Response type:', typeof response);
               console.log('Response value:', response);
               
-              // Handle plain text response (backend returns "Phone number exists in the database." as text)
+              // Handle plain text response from backend
               let responseText = '';
               if (typeof response === 'string') {
-                responseText = response;
+                responseText = response.trim();
                 console.log('Response is plain text:', responseText);
               } else if (response?.text) {
-                responseText = response.text;
+                responseText = response.text.trim();
                 console.log('Response text from object:', responseText);
               }
               
               // Check if response text indicates phone number exists
               if (responseText) {
-                const lowerText = responseText.toLowerCase();
+                const lowerText = responseText.toLowerCase().trim();
+                console.log('Checking response text (lowercase):', lowerText);
+                
+                // Backend returns "Phone number already exists." or similar when phone exists
+                if (lowerText === 'phone number already exists.' || 
+                    lowerText === 'phone number already exists' ||
+                    lowerText.includes('phone number already exists') || 
+                    lowerText.includes('already exists')) {
+                  console.log('❌ Phone number already exists - returning validation error');
+                  return { phoneNumberExists: true };
+                }
+                
+                // Backend returns "Phone number not found." when phone is available
+                if (lowerText === 'phone number not found.' || 
+                    lowerText === 'phone number not found' ||
+                    lowerText.includes('phone number not found') || 
+                    lowerText.includes('not found')) {
+                  console.log('✅ Phone number is available (not found in database)');
+                  return null; // Return null means validation passed (phone is available)
+                }
+                
+                // Fallback patterns for other possible responses
                 if (lowerText.includes('phone number exists') || 
                     lowerText.includes('phone exists') ||
                     lowerText.includes('exists in the database') ||
-                    lowerText.includes('already exists') ||
                     lowerText.includes('already registered') ||
                     lowerText.includes('phone number is taken')) {
-                  console.log('✅ Phone number exists (detected from plain text: "' + responseText + '")');
+                  console.log('❌ Phone number exists (fallback pattern match)');
                   return { phoneNumberExists: true };
                 }
-                // If text says phone number is available
+                
                 if (lowerText.includes('phone number available') || 
-                    lowerText.includes('phone number does not exist') ||
-                    lowerText.includes('not found') ||
-                    lowerText.includes('available')) {
-                  console.log('✅ Phone number is available (detected from plain text: "' + responseText + '")');
+                    lowerText.includes('phone number does not exist')) {
+                  console.log('✅ Phone number is available (fallback pattern match)');
                   return null;
                 }
               }
@@ -1384,10 +1242,53 @@ export class SignupComponent implements OnInit {
     return labels[fieldName] || fieldName;
   }
 
+  onFileSelected(event: any): void {
+    const file = event.target.files[0];
+    this.profilePictureError = null;
+
+    if (!file) {
+      return;
+    }
+
+    // Validate file type
+    if (!file.type.startsWith('image/')) {
+      this.profilePictureError = 'Please select a valid image file';
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    const maxSize = 5 * 1024 * 1024; // 5MB in bytes
+    if (file.size > maxSize) {
+      this.profilePictureError = 'Image size must be less than 5MB';
+      return;
+    }
+
+    this.profilePictureFile = file;
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (e: any) => {
+      this.profilePicturePreview = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  removeProfilePicture(): void {
+    this.profilePictureFile = null;
+    this.profilePicturePreview = null;
+    this.profilePictureError = null;
+    // Reset file input
+    const fileInput = document.getElementById('profilePictureInput') as HTMLInputElement;
+    if (fileInput) {
+      fileInput.value = '';
+    }
+  }
+
   onSubmit(): void {
     this.submitted = true;
     this.successMessage = '';
     this.errorMessage = '';
+    this.profilePictureError = null;
 
     if (this.signupForm.invalid) {
       console.log('Form is invalid');
@@ -1395,18 +1296,63 @@ export class SignupComponent implements OnInit {
     }
 
     this.isLoading = true;
-    const formData: SignupData = this.signupForm.value;
-    
-    console.log('Submitting signup form with data:', formData);
-    console.log('API Endpoint: http://localhost:8081/signUp');
 
-    this.signupService.signup(formData).subscribe({
+    // If profile picture is selected, upload it first
+    if (this.profilePictureFile) {
+      console.log('=== Uploading profile picture ===');
+      this.signupService.uploadImage(this.profilePictureFile).subscribe({
+        next: (photoUrl: string) => {
+          console.log('Profile picture uploaded successfully. Photo URL:', photoUrl);
+          // Clean up the photoUrl if it has a prefix (e.g., "1 /path/to/file.jpg" -> "/path/to/file.jpg")
+          const cleanPhotoUrl = photoUrl.replace(/^\d+\s+/, '').trim();
+          // Proceed with signup using the photoUrl
+          this.performSignup(cleanPhotoUrl);
+        },
+        error: (error) => {
+          this.isLoading = false;
+          console.error('Profile picture upload failed:', error);
+          this.profilePictureError = 'Failed to upload profile picture. Please try again.';
+          this.errorMessage = 'Failed to upload profile picture. Please try again.';
+        }
+      });
+    } else {
+      // No profile picture, proceed with signup
+      this.performSignup();
+    }
+  }
+
+  private performSignup(photoUrl?: string): void {
+    // Get all form values including disabled controls
+    const formValues = this.signupForm.getRawValue();
+    
+    // Prepare signup data as JSON
+    const signupData: SignupData = {
+      firstName: formValues.firstName || '',
+      lastName: formValues.lastName || '',
+      email: formValues.email || '',
+      password: formValues.password || '',
+      phoneNumber: formValues.phoneNumber || '',
+      gender: formValues.gender || '',
+      dob: formValues.dob || '',
+      country: formValues.country || '',
+      state: formValues.state || '',
+      city: formValues.city || '',
+      address: formValues.address || '',
+      pincode: formValues.pincode || '',
+      photoUrl: photoUrl || ''
+    };
+
+    console.log('=== Calling /api/auth/signUp endpoint ===');
+    console.log('Signup Data (JSON):', JSON.stringify(signupData, null, 2));
+
+    this.signupService.signup(signupData).subscribe({
       next: (response) => {
         this.isLoading = false;
         console.log('API Response received:', response);
         
         // Store user data in localStorage
-        localStorage.setItem('currentUser', JSON.stringify(formData));
+        const userData = this.signupForm.value;
+        localStorage.setItem('currentUser', JSON.stringify(userData));
         
         // Show success message briefly before navigation
         this.successMessage = 'Signup successful! Welcome to Trove Social App.';

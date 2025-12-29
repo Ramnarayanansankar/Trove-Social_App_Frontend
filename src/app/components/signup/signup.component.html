@@ -2,6 +2,54 @@
   <h1 class="form-title">Trove</h1>
   <p style="text-align: center; color: #666; margin-bottom: 30px;">Create Your Account</p>
 
+  <!-- Profile Picture Upload -->
+  <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;">
+    <div class="profile-picture-container">
+      <div class="profile-picture-preview">
+        <img 
+          [src]="profilePicturePreview" 
+          alt="Profile Picture" 
+          class="profile-picture-image"
+          *ngIf="profilePicturePreview"
+        />
+        <div class="profile-picture-placeholder" *ngIf="!profilePicturePreview">
+          <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path>
+            <circle cx="12" cy="7" r="4"></circle>
+          </svg>
+        </div>
+      </div>
+      <div style="display: flex; gap: 10px; margin-top: 10px;">
+        <input 
+          type="file" 
+          id="profilePictureInput" 
+          accept="image/*" 
+          (change)="onFileSelected($event)"
+          style="display: none;"
+          #fileInput
+        />
+        <button 
+          type="button" 
+          class="profile-picture-upload-btn"
+          (click)="fileInput.click()"
+        >
+          {{ profilePictureFile ? 'Change Photo' : 'Choose Photo' }}
+        </button>
+        <button 
+          type="button" 
+          class="profile-picture-remove-btn"
+          (click)="removeProfilePicture()"
+          *ngIf="profilePictureFile"
+        >
+          Remove
+        </button>
+      </div>
+    </div>
+    <span class="error-message" *ngIf="profilePictureError" style="margin-top: 10px;">
+      {{ profilePictureError }}
+    </span>
+  </div>
+
   <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
     
     <!-- Success Message -->
@@ -74,7 +122,7 @@
       </span>
       <!-- Email exists error (show only once) -->
       <span class="error-message" *ngIf="!emailChecking && (f['email'].errors?.['emailExists'] || emailAvailable === false)">
-        ✗ This email is already registered. Please use a different email address.
+        ✗ Email already exists
       </span>
     </div>
 
@@ -125,7 +173,7 @@
         </span>
         <!-- Phone number exists error (show only once) -->
         <span class="error-message" *ngIf="!phoneNumberChecking && (f['phoneNumber'].errors?.['phoneNumberExists'] || phoneNumberAvailable === false)">
-          ✗ This phone number is already registered. Please use a different phone number.
+          ✗ Phone number already exists
         </span>
       </div>
 
@@ -191,7 +239,6 @@
           formControlName="state"
           class="form-control"
           [class.error]="submitted && f['state'].invalid"
-          [disabled]="!availableStates.length"
         >
           <option value="">Select State</option>
           <option *ngFor="let state of availableStates" [value]="state">
@@ -211,7 +258,6 @@
         formControlName="city"
         class="form-control"
         [class.error]="submitted && f['city'].invalid"
-        [disabled]="!availableCities.length"
       >
         <option value="">Select City</option>
         <option *ngFor="let city of availableCities" [value]="city">
