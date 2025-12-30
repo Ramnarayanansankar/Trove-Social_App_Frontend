@@ -13,7 +13,7 @@ export interface LoginData {
 })
 export class LoginService {
   // Base URL for authentication endpoints
-  private baseUrl = '/api/auth';
+  private baseUrl = 'http://localhost:8081/api/auth';
   private httpOptions = {
     headers: new HttpHeaders({
       'Content-Type': 'application/json',
