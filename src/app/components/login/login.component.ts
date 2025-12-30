@@ -107,23 +107,87 @@ export class LoginComponent implements OnInit {
                         existingUserData?.lastName || // Fallback to existing data
                         '';
         
+        // Extract photoUrl from response
+        const photoUrl = response?.photoUrl || 
+                        response?.user?.photoUrl || 
+                        response?.data?.photoUrl ||
+                        response?.data?.user?.photoUrl ||
+                        null;
+        
         console.log('Extracted firstName:', firstName, 'from response');
+        console.log('Extracted photoUrl:', photoUrl, 'from response');
         
-        const userData = {
-          email: loginData.email,
-          firstName: firstName,
-          lastName: lastName
-        };
-        console.log('Storing user data in localStorage:', userData);
-        localStorage.setItem('currentUser', JSON.stringify(userData));
-        
-        // Show success message briefly before navigation
-        this.successMessage = 'Login successful! Redirecting...';
-        
-        // Navigate to homepage after a short delay
-        setTimeout(() => {
-          this.router.navigate(['/home']);
-        }, 1000);
+        // If photoUrl exists, fetch the photo
+        if (photoUrl) {
+          console.log('Fetching profile picture with photoUrl:', photoUrl);
+          this.loginService.getPhoto(photoUrl).subscribe({
+            next: (photoBlob: Blob) => {
+              console.log('Profile picture received, size:', photoBlob.size, 'bytes');
+              // Convert blob to base64 data URL
+              const reader = new FileReader();
+              reader.onloadend = () => {
+                const base64data = reader.result as string;
+                console.log('Profile picture converted to base64');
+                
+                // Store user data with profile picture
+                const userData = {
+                  email: loginData.email,
+                  firstName: firstName,
+                  lastName: lastName,
+                  profilePicture: base64data
+                };
+                console.log('Storing user data with profile picture in localStorage');
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                
+                // Navigate to homepage
+                this.router.navigate(['/home']);
+              };
+              reader.onerror = () => {
+                console.error('Error converting profile picture to base64');
+                // Store user data without profile picture
+                const userData = {
+                  email: loginData.email,
+                  firstName: firstName,
+                  lastName: lastName
+                };
+                localStorage.setItem('currentUser', JSON.stringify(userData));
+                this.router.navigate(['/home']);
+              };
+              reader.readAsDataURL(photoBlob);
+            },
+            error: (photoError) => {
+              console.error('Error fetching profile picture:', photoError);
+              // Store user data without profile picture
+              const userData = {
+                email: loginData.email,
+                firstName: firstName,
+                lastName: lastName
+              };
+              console.log('Storing user data without profile picture in localStorage');
+              localStorage.setItem('currentUser', JSON.stringify(userData));
+              
+              // Navigate to homepage even if photo fetch fails
+              this.router.navigate(['/home']);
+            }
+          });
+        } else {
+          // No photoUrl, store user data without profile picture
+          const userData = {
+            email: loginData.email,
+            firstName: firstName,
+            lastName: lastName
+          };
+          console.log('Storing user data without profile picture in localStorage');
+          localStorage.setItem('currentUser', JSON.stringify(userData));
+          
+          // Show success message briefly before navigation
+          this.successMessage = 'Login successful! Redirecting...';
+          
+          // Navigate to homepage after a short delay
+          setTimeout(() => {
+            this.router.navigate(['/home']);
+          }, 1000);
+        }
       },
       error: (error) => {
         this.isLoading = false;

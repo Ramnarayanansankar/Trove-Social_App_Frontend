@@ -24,6 +24,7 @@ interface Stats {
 export class HomepageComponent implements OnInit {
   userName: string = 'User';
   userInitials: string = 'U';
+  profilePicture: string | null = null;
   showNotifications: boolean = false;
   notificationCount: number = 0;
   
@@ -67,11 +68,21 @@ export class HomepageComponent implements OnInit {
         const lastNameInitial = user.lastName?.[0]?.toUpperCase() || '';
         this.userInitials = firstNameInitial + lastNameInitial || 'U';
         
-        console.log('User data loaded:', { firstName: user.firstName, userName: this.userName });
+        // Load profile picture if available
+        if (user.profilePicture) {
+          this.profilePicture = user.profilePicture;
+          console.log('Profile picture loaded from localStorage');
+        } else {
+          this.profilePicture = null;
+          console.log('No profile picture found in user data');
+        }
+        
+        console.log('User data loaded:', { firstName: user.firstName, userName: this.userName, hasProfilePicture: !!this.profilePicture });
       } catch (error) {
         console.error('Error parsing user data:', error);
         this.userName = 'User';
         this.userInitials = 'U';
+        this.profilePicture = null;
       }
     } else {
       // If no user data found, redirect to login

@@ -7,7 +7,10 @@
         🔔
         <div class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</div>
       </div>
-      <div class="avatar" (click)="logout()">{{ userInitials }}</div>
+      <div class="avatar" (click)="logout()">
+        <img *ngIf="profilePicture" [src]="profilePicture" alt="Profile Picture" class="avatar-image" />
+        <span *ngIf="!profilePicture">{{ userInitials }}</span>
+      </div>
     </div>
   </div>
 
