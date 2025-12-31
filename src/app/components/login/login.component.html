@@ -1,71 +1,105 @@
-<div class="form-container">
-  <h1 class="form-title">Welcome Back to Trove!!</h1>
-  <p style="text-align: center; color: #666; margin-bottom: 30px;">Login to your account</p>
-
-  <form [formGroup]="loginForm" (ngSubmit)="onSubmit()">
-    
-    <!-- Success Message -->
-    <div *ngIf="successMessage" class="success-message">
-      {{ successMessage }}
+<div class="login-page">
+  <div class="login-layout">
+    <!-- Left Side - Promotional Content -->
+    <div class="login-promo">
+      <div class="promo-content">
+        <h1 class="promo-title">Trove</h1>
+        <p class="promo-text">Share your moments, connect with friends, and discover amazing content.</p>
+        <div class="promo-features">
+          <div class="feature-item">
+            <div class="feature-icon">📸</div>
+            <span>Share Photos</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">👥</div>
+            <span>Connect Friends</span>
+          </div>
+          <div class="feature-item">
+            <div class="feature-icon">✨</div>
+            <span>Discover Content</span>
+          </div>
+        </div>
+      </div>
     </div>
 
-    <!-- Error Message -->
-    <div *ngIf="errorMessage" class="error-message" style="background: #f8d7da; color: #721c24; padding: 12px; border-radius: 8px; margin-bottom: 20px;">
-      {{ errorMessage }}
+    <!-- Right Side - Login Form -->
+    <div class="login-form-side">
+      <div class="login-box">
+        <h2 class="login-title">Log into Trove</h2>
+
+        <form [formGroup]="loginForm" (ngSubmit)="onSubmit()" class="login-form">
+          <!-- Error Message -->
+          <div *ngIf="errorMessage" class="login-error">
+            {{ errorMessage }}
+          </div>
+
+          <!-- Success Message -->
+          <div *ngIf="successMessage" class="login-success">
+            {{ successMessage }}
+          </div>
+
+          <!-- Email -->
+          <div class="form-group">
+            <label class="form-label" for="email">Email *</label>
+            <input
+              type="email"
+              id="email"
+              formControlName="email"
+              class="form-control"
+              [class.error]="submitted && f['email'].invalid"
+              placeholder="Enter your email address"
+            />
+            <span class="error-message" *ngIf="getFieldError('email')">
+              {{ getFieldError('email') }}
+            </span>
+          </div>
+
+          <!-- Password -->
+          <div class="form-group">
+            <label class="form-label" for="password">Password *</label>
+            <input
+              type="password"
+              id="password"
+              formControlName="password"
+              class="form-control"
+              [class.error]="submitted && f['password'].invalid"
+              placeholder="Enter your password"
+            />
+            <span class="error-message" *ngIf="getFieldError('password')">
+              {{ getFieldError('password') }}
+            </span>
+          </div>
+
+          <!-- Submit Button -->
+          <button
+            type="submit"
+            class="btn btn-primary"
+            [disabled]="isLoading || loginForm.invalid"
+          >
+            <span *ngIf="!isLoading">Log in</span>
+            <span *ngIf="isLoading">Logging in...</span>
+          </button>
+        </form>
+
+        <!-- Forgot Password -->
+        <div class="forgot-password">
+          <a href="#" class="forgot-link">Forgot password?</a>
+        </div>
+
+        <!-- Divider -->
+        <div class="login-divider">
+          <span>OR</span>
+        </div>
+
+        <!-- Sign Up Link -->
+        <div class="login-signup">
+          <p>
+            Don't have an account? 
+            <a routerLink="/signup" class="signup-link">Sign up</a>
+          </p>
+        </div>
+      </div>
     </div>
-
-    <!-- Email -->
-    <div class="form-group">
-      <label class="form-label" for="email">Email *</label>
-      <input
-        type="email"
-        id="email"
-        formControlName="email"
-        class="form-control"
-        [class.error]="submitted && f['email'].invalid"
-        placeholder="Enter your email address"
-      />
-      <span class="error-message" *ngIf="getFieldError('email')">
-        {{ getFieldError('email') }}
-      </span>
-    </div>
-
-    <!-- Password -->
-    <div class="form-group">
-      <label class="form-label" for="password">Password *</label>
-      <input
-        type="password"
-        id="password"
-        formControlName="password"
-        class="form-control"
-        [class.error]="submitted && f['password'].invalid"
-        placeholder="Enter your password"
-      />
-      <span class="error-message" *ngIf="getFieldError('password')">
-        {{ getFieldError('password') }}
-      </span>
-    </div>
-
-    <!-- Submit Button -->
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="isLoading"
-    >
-      <span *ngIf="!isLoading">Sign In</span>
-      <span *ngIf="isLoading">Signing In...</span>
-    </button>
-
-    <!-- Sign Up Link -->
-    <div style="text-align: center; margin-top: 20px;">
-      <p style="color: #666; font-size: 14px;">
-        Don't have an account? 
-        <a routerLink="/signup" style="color: #6366f1; text-decoration: none; font-weight: 500;">
-          Sign up
-        </a>
-      </p>
-    </div>
-
-  </form>
+  </div>
 </div>
 

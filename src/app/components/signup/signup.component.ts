@@ -938,8 +938,6 @@ export class SignupComponent implements OnInit {
               return null;
             }),
             catchError((error) => {
-           
-              
               // Handle the case where backend returns plain text instead of JSON
               // This happens when backend returns "Email exists in the database." as plain text
               if (error.status === 400) {
@@ -986,191 +984,31 @@ export class SignupComponent implements OnInit {
           console.log('🔍 Checking phone number existence for:', control.value);
 
           return this.signupService.checkPhoneNumberExists(control.value).pipe(
-            map((response: any) => {
-              console.log('=== Phone Number Check API Response ===');
-              console.log('Full response:', response);
-              console.log('Response type:', typeof response);
-              console.log('Response value:', response);
-              
-              // Handle plain text response from backend
-              let responseText = '';
-              if (typeof response === 'string') {
-                responseText = response.trim();
-                console.log('Response is plain text:', responseText);
-              } else if (response?.text) {
-                responseText = response.text.trim();
-                console.log('Response text from object:', responseText);
-              }
-              
-              // Check if response text indicates phone number exists
-              if (responseText) {
-                const lowerText = responseText.toLowerCase().trim();
-                console.log('Checking response text (lowercase):', lowerText);
-                
-                // Backend returns "Phone number already exists." or similar when phone exists
-                if (lowerText === 'phone number already exists.' || 
-                    lowerText === 'phone number already exists' ||
-                    lowerText.includes('phone number already exists') || 
-                    lowerText.includes('already exists')) {
-                  console.log('❌ Phone number already exists - returning validation error');
-                  return { phoneNumberExists: true };
-                }
-                
-                // Backend returns "Phone number not found." when phone is available
-                if (lowerText === 'phone number not found.' || 
-                    lowerText === 'phone number not found' ||
-                    lowerText.includes('phone number not found') || 
-                    lowerText.includes('not found')) {
-                  console.log('✅ Phone number is available (not found in database)');
-                  return null; // Return null means validation passed (phone is available)
-                }
-                
-                // Fallback patterns for other possible responses
-                if (lowerText.includes('phone number exists') || 
-                    lowerText.includes('phone exists') ||
-                    lowerText.includes('exists in the database') ||
-                    lowerText.includes('already registered') ||
-                    lowerText.includes('phone number is taken')) {
-                  console.log('❌ Phone number exists (fallback pattern match)');
-                  return { phoneNumberExists: true };
-                }
-                
-                if (lowerText.includes('phone number available') || 
-                    lowerText.includes('phone number does not exist')) {
-                  console.log('✅ Phone number is available (fallback pattern match)');
-                  return null;
-                }
-              }
-              
-              // Handle different possible API response structures
-              // Check if response indicates phone number exists
-              let phoneNumberExists = false;
-              
-              // Direct boolean or string (true means exists)
-              if (response === true || response === 'true' || response === 'TRUE') {
-                phoneNumberExists = true;
-                console.log('Phone number exists: Direct boolean/string true');
-              }
-              // Object with exists property
-              else if (response?.exists === true || 
-                       response?.phoneNumberExists === true || 
-                       response?.isExists === true ||
-                       response?.phoneNumberAlreadyExists === true ||
-                       response?.exists === 'true' ||
-                       response?.phoneNumberExists === 'true') {
-                phoneNumberExists = true;
-                console.log('Phone number exists: Object property');
-              }
-              // Status field
-              else if (response?.status === 'exists' || 
-                       response?.status === 'EXISTS' ||
-                       response?.status === 'already_exists') {
-                phoneNumberExists = true;
-                console.log('Phone number exists: Status field');
-              }
-              // Available field (false means exists)
-              else if (response?.available === false || 
-                       response?.isAvailable === false ||
-                       response?.available === 'false' ||
-                       response?.available === 'FALSE') {
-                phoneNumberExists = true;
-                console.log('Phone number exists: Available field is false');
-              }
-              
-              // Check message strings
-              const message = response?.message || 
-                             response?.msg || 
-                             response?.data?.message || 
-                             response?.error?.message || '';
-              if (message && typeof message === 'string') {
-                const lowerMessage = message.toLowerCase();
-                if (lowerMessage.includes('exists') || 
-                    lowerMessage.includes('already') || 
-                    lowerMessage.includes('taken') ||
-                    lowerMessage.includes('registered') ||
-                    lowerMessage.includes('found') ||
-                    lowerMessage.includes('duplicate')) {
-                  phoneNumberExists = true;
-                  console.log('Phone number exists: Message indicates exists');
-                }
-              }
-              
-              console.log('Final phone number exists result:', phoneNumberExists);
-              
-              if (phoneNumberExists) {
-                console.log('❌ Phone number already exists - returning validation error');
+                        map((response: any) => {
+              console.log('=== Phone Number Check API Response ==='); 
+              console.log('Check Phone Number existence Response:', response);
+              if(response.status === 200){
                 return { phoneNumberExists: true };
               }
-              
-              console.log('✅ Phone number is available');
               return null;
             }),
             catchError((error) => {
-              console.log('❌ Phone number check API error:', error);
-              console.log('Error status:', error.status);
-              console.log('Error body:', error.error);
-              console.log('Full error object:', JSON.stringify(error, null, 2));
-              
               // Handle the case where backend returns plain text instead of JSON
-              if (error.status === 200) {
-                // Check if error.error contains text indicating phone number exists
-                const errorText = error.error?.text || 
-                                 error.error?.error?.text || 
-                                 (typeof error.error === 'string' ? error.error : '') ||
-                                 '';
-                
-                console.log('Error text found:', errorText);
-                
-                if (errorText) {
-                  const lowerText = errorText.toLowerCase();
-                  if (lowerText.includes('phone number exists') || 
-                      lowerText.includes('phone exists') ||
-                      lowerText.includes('exists in the database') ||
-                      lowerText.includes('already exists') ||
-                      lowerText.includes('already registered') ||
-                      lowerText.includes('phone number is taken')) {
-                    console.log('✅ Phone number exists (detected from plain text response)');
-                    return of({ phoneNumberExists: true });
-                  }
-                  // If text says phone number doesn't exist or is available
-                  if (lowerText.includes('phone number available') || 
-                      lowerText.includes('phone number does not exist') ||
-                      lowerText.includes('not found')) {
-                    console.log('✅ Phone number is available (detected from plain text response)');
-                    return of(null);
-                  }
-                }
-                
-                // Also check error.error object structure
-                if (error.error) {
-                  const phoneNumberExists = 
-                    error.error === true ||
-                    error.error?.exists === true ||
-                    error.error?.phoneNumberExists === true ||
-                    error.error?.status === 'exists' ||
-                    (error.error?.message && typeof error.error.message === 'string' && (
-                      error.error.message.toLowerCase().includes('exists') ||
-                      error.error.message.toLowerCase().includes('already') ||
-                      error.error.message.toLowerCase().includes('taken')
-                    ));
-                  if (phoneNumberExists) {
-                    console.log('✅ Phone number exists (from error.error object)');
-                    return of({ phoneNumberExists: true });
-                  }
-                }
-              }
-              
-              // If API returns 409 Conflict, phone number likely exists
-              if (error.status === 409) {
-                console.log('✅ Phone number exists (409 Conflict)');
+              // This happens when backend returns "Email exists in the database." as plain text
+              if (error.status === 400) {
+                // Check if error.error contains text indicating email exists
+                console.log('✅ Email exists (400 Bad Request)');
                 return of({ phoneNumberExists: true });
+                
+      
+
               }
-              
               // For other errors (network, 500, etc.), don't block the form
               // Return null to allow form submission (backend will validate on submit)
               console.warn('⚠️ Error checking phone number existence - allowing form submission:', error);
               return of(null);
             })
+
           );
         })
       );

@@ -1,9 +1,19 @@
-<div class="form-container">
-  <h1 class="form-title">Trove</h1>
-  <p style="text-align: center; color: #666; margin-bottom: 30px;">Create Your Account</p>
+<div class="login-page">
+  <!-- Top Section - Logo and Caption -->
+  <div class="signup-top">
+    <h1 class="promo-title">Trove</h1>
+    <p class="promo-text">Share your moments, connect with friends, and discover amazing content.</p>
+  </div>
 
-  <!-- Profile Picture Upload -->
-  <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;">
+  <div class="login-layout">
+
+    <!-- Right Side - Signup Form -->
+    <div class="login-form-side">
+      <div class="login-box">
+        <h2 class="login-title">Create Your Account</h2>
+
+      <!-- Profile Picture Upload -->
+      <div style="display: flex; flex-direction: column; align-items: center; margin-bottom: 30px;">
     <div class="profile-picture-container">
       <div class="profile-picture-preview">
         <img 
@@ -48,9 +58,9 @@
     <span class="error-message" *ngIf="profilePictureError" style="margin-top: 10px;">
       {{ profilePictureError }}
     </span>
-  </div>
+      </div>
 
-  <form [formGroup]="signupForm" (ngSubmit)="onSubmit()">
+      <form [formGroup]="signupForm" (ngSubmit)="onSubmit()" class="login-form">
     
     <!-- Success Message -->
     <div *ngIf="successMessage" class="success-message">
@@ -302,16 +312,30 @@
       </span>
     </div>
 
-    <!-- Submit Button -->
-    <button
-      type="submit"
-      class="btn btn-primary"
-      [disabled]="isLoading"
-    >
-      <span *ngIf="!isLoading">Create Account</span>
-      <span *ngIf="isLoading">Creating Account...</span>
-    </button>
+      <!-- Submit Button -->
+      <button
+        type="submit"
+        class="btn btn-primary"
+        [disabled]="isLoading"
+      >
+        <span *ngIf="!isLoading">Create Account</span>
+        <span *ngIf="isLoading">Creating Account...</span>
+      </button>
+      </form>
 
-  </form>
+      <!-- Divider -->
+      <div class="login-divider">
+        <span>OR</span>
+      </div>
+
+      <!-- Login Link -->
+      <div class="login-signup">
+        <p>
+          Already have an account? 
+          <a routerLink="/login" class="signup-link">Sign in</a>
+        </p>
+      </div>
+    </div>
+  </div>
 </div>
 

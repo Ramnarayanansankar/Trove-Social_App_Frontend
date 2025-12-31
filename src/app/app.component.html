@@ -1,4 +1,47 @@
-<div class="container">
-  <router-outlet></router-outlet>
+<div class="app-container">
+  <!-- Main Content -->
+  <main class="main-content">
+    <router-outlet></router-outlet>
+  </main>
+
+  <!-- Footer -->
+  <footer class="app-footer">
+    <div class="footer-content">
+      <div class="footer-section">
+        <div class="footer-brand">
+          <div class="brand-logo-icon">
+            <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <defs>
+                <linearGradient id="brandGradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <rect width="32" height="32" rx="8" fill="url(#brandGradient)"/>
+              <path d="M16 10L20 14H18V20H14V14H12L16 10Z" fill="white"/>
+              <circle cx="16" cy="22" r="1.5" fill="white"/>
+            </svg>
+          </div>
+          <h3>Trove</h3>
+        </div>
+        <p>Connect, Share, Discover</p>
+      </div>
+      <div class="footer-section">
+        <h4>Quick Links</h4>
+        <ul>
+          <li><a routerLink="/login">Login</a></li>
+          <li><a routerLink="/signup">Sign Up</a></li>
+          <li><a routerLink="/home">Home</a></li>
+        </ul>
+      </div>
+      <div class="footer-section">
+        <h4>About</h4>
+        <p>Your social media platform for sharing moments and connecting with friends.</p>
+      </div>
+    </div>
+    <div class="footer-bottom">
+      <p>&copy; 2024 <strong>Trove</strong>. All rights reserved.</p>
+    </div>
+  </footer>
 </div>
 
