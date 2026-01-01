@@ -27,6 +27,11 @@ export class HomepageComponent implements OnInit {
   profilePicture: string | null = null;
   showNotifications: boolean = false;
   notificationCount: number = 0;
+  activeNav: string = 'home';
+  showCreateModal: boolean = false;
+  userId: string = '';
+  showToast: boolean = false;
+  toastMessage: string = '';
   
   stats: Stats = {
     followers: 120,
@@ -65,8 +70,7 @@ export class HomepageComponent implements OnInit {
         this.userName = user.firstName || 'User';
         // Set initials from first and last name
         const firstNameInitial = user.firstName?.[0]?.toUpperCase() || '';
-        const lastNameInitial = user.lastName?.[0]?.toUpperCase() || '';
-        this.userInitials = firstNameInitial + lastNameInitial || 'U';
+        this.userInitials = firstNameInitial || 'U';
         
         // Load profile picture if available
         if (user.profilePicture) {
@@ -77,7 +81,16 @@ export class HomepageComponent implements OnInit {
           console.log('No profile picture found in user data');
         }
         
-        console.log('User data loaded:', { firstName: user.firstName, userName: this.userName, hasProfilePicture: !!this.profilePicture });
+        // Load user ID (try multiple possible field names)
+        if (user.id) {
+          this.userId = user.id.toString();
+        } else if (user.userId) {
+          this.userId = user.userId.toString();
+        } else if (user._id) {
+          this.userId = user._id.toString();
+        }
+        
+        console.log('User data loaded:', { firstName: user.firstName, userName: this.userName, hasProfilePicture: !!this.profilePicture, userId: this.userId });
       } catch (error) {
         console.error('Error parsing user data:', error);
         this.userName = 'User';
@@ -120,6 +133,38 @@ export class HomepageComponent implements OnInit {
       // Handle ignore action
       console.log('Ignored notification');
     }
+  }
+
+  setActiveNav(nav: string): void {
+    this.activeNav = nav;
+  }
+
+  openCreateModal(): void {
+    this.showCreateModal = true;
+  }
+
+  closeCreateModal(): void {
+    this.showCreateModal = false;
+  }
+
+  onPostCreated(): void {
+    // Show toast notification
+    this.showToastMessage('Post shared successfully!');
+    
+    // Reload homepage after a short delay
+    setTimeout(() => {
+      window.location.reload();
+    }, 2000);
+  }
+
+  showToastMessage(message: string): void {
+    this.toastMessage = message;
+    this.showToast = true;
+    
+    // Auto-hide toast after 3 seconds
+    setTimeout(() => {
+      this.showToast = false;
+    }, 3000);
   }
 
   logout(): void {

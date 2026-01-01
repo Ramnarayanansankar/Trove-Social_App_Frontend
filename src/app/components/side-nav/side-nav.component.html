@@ -1,0 +1,38 @@
+<nav class="side-nav">
+  <div class="nav-logo">
+    <h1 class="logo-text">Trove</h1>
+  </div>
+  
+  <div class="nav-menu">
+    <a class="nav-item" [class.active]="activeNav === 'home'" (click)="setActiveNav('home')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/>
+      </svg>
+      <span>Home</span>
+    </a>
+    
+    <a class="nav-item" [class.active]="activeNav === 'create'" (click)="setActiveNav('create')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+      </svg>
+      <span>Create</span>
+    </a>
+    
+    <a class="nav-item" [class.active]="activeNav === 'notification'" (click)="setActiveNav('notification')">
+      <svg class="nav-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 22c1.1 0 2-.9 2-2h-4c0 1.1.89 2 2 2zm6-6v-5c0-3.07-1.64-5.64-4.5-6.32V4c0-.83-.67-1.5-1.5-1.5s-1.5.67-1.5 1.5v.68C7.63 5.36 6 7.92 6 11v5l-2 2v1h16v-1l-2-2z"/>
+      </svg>
+      <span>Notifications</span>
+      <div class="nav-badge" *ngIf="notificationCount > 0">{{ notificationCount }}</div>
+    </a>
+  </div>
+  
+  <div class="nav-profile" (click)="onLogout()">
+    <div class="profile-avatar">
+      <img *ngIf="profilePicture" [src]="profilePicture" alt="Profile Picture" class="avatar-image" />
+      <span *ngIf="!profilePicture">{{ userInitials }}</span>
+    </div>
+    <span class="profile-name">{{ userName }}</span>
+  </div>
+</nav>
+

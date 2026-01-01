@@ -1,18 +1,19 @@
 <div class="homepage-container">
-  <!-- HEADER -->
-  <div class="header">
-    <div>Welcome, {{ userName }}</div>
-    <div class="header-right">
-      <div class="bell" (click)="toggleNotifications()">
-        🔔
-        <div class="badge" *ngIf="notificationCount > 0">{{ notificationCount }}</div>
-      </div>
-      <div class="avatar" (click)="logout()">
-        <img *ngIf="profilePicture" [src]="profilePicture" alt="Profile Picture" class="avatar-image" />
-        <span *ngIf="!profilePicture">{{ userInitials }}</span>
-      </div>
-    </div>
-  </div>
+  <!-- SIDE NAVIGATION -->
+  <app-side-nav
+    [userName]="userName"
+    [userInitials]="userInitials"
+    [profilePicture]="profilePicture"
+    [notificationCount]="notificationCount"
+    [activeNav]="activeNav"
+    (navChange)="setActiveNav($event)"
+    (notificationClick)="toggleNotifications()"
+    (createClick)="openCreateModal()"
+    (logoutClick)="logout()">
+  </app-side-nav>
+
+  <!-- MAIN CONTENT -->
+  <div class="main-content">
 
   <!-- CENTERED STATS -->
   <div class="stats">
@@ -57,4 +58,23 @@
 
   <!-- Drawer overlay -->
   <div class="drawer-overlay" [class.show]="showNotifications" (click)="toggleNotifications()"></div>
+
+  <!-- CREATE POST MODAL -->
+  <app-create-post
+    [userId]="userId"
+    [show]="showCreateModal"
+    (close)="closeCreateModal()"
+    (postCreated)="onPostCreated()">
+  </app-create-post>
+
+  <!-- TOAST NOTIFICATION -->
+  <div class="toast" [class.show]="showToast">
+    <div class="toast-content">
+      <svg class="toast-icon" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+      </svg>
+      <span class="toast-message">{{ toastMessage }}</span>
+    </div>
+  </div>
+  </div>
 </div>

@@ -100,18 +100,17 @@ export class LoginComponent implements OnInit {
                          response?.data?.username ||
                          existingUserData?.firstName || // Fallback to existing data
                          'User';
-        const lastName = response?.user?.lastName || 
-                        response?.lastName || 
-                        response?.data?.lastName ||
-                        response?.data?.user?.lastName ||
-                        existingUserData?.lastName || // Fallback to existing data
-                        '';
         
         // Extract photoUrl from response
         const photoUrl = response?.photoUrl || 
                         response?.user?.photoUrl || 
                         response?.data?.photoUrl ||
                         response?.data?.user?.photoUrl ||
+                        null;
+        
+        const userId = response?.id ||response?.user?.id || 
+                        response?.data?.user?.id || 
+                        existingUserData?.userId || 
                         null;
         
         console.log('Extracted firstName:', firstName, 'from response');
@@ -133,7 +132,7 @@ export class LoginComponent implements OnInit {
                 const userData = {
                   email: loginData.email,
                   firstName: firstName,
-                  lastName: lastName,
+                  userId: userId,
                   profilePicture: base64data
                 };
                 console.log('Storing user data with profile picture in localStorage');
@@ -148,7 +147,7 @@ export class LoginComponent implements OnInit {
                 const userData = {
                   email: loginData.email,
                   firstName: firstName,
-                  lastName: lastName
+                  userId: userId
                 };
                 localStorage.setItem('currentUser', JSON.stringify(userData));
                 this.router.navigate(['/home']);
@@ -161,7 +160,7 @@ export class LoginComponent implements OnInit {
               const userData = {
                 email: loginData.email,
                 firstName: firstName,
-                lastName: lastName
+                userId: userId
               };
               console.log('Storing user data without profile picture in localStorage');
               localStorage.setItem('currentUser', JSON.stringify(userData));
@@ -175,7 +174,7 @@ export class LoginComponent implements OnInit {
           const userData = {
             email: loginData.email,
             firstName: firstName,
-            lastName: lastName
+            userId: userId
           };
           console.log('Storing user data without profile picture in localStorage');
           localStorage.setItem('currentUser', JSON.stringify(userData));

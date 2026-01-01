@@ -1,0 +1,66 @@
+<div class="modal-overlay" [class.show]="show" (click)="onClose()">
+  <div class="create-modal" (click)="$event.stopPropagation()">
+    <div class="modal-header">
+      <h2>Create New Post</h2>
+      <button class="close-btn" (click)="onClose()">×</button>
+    </div>
+
+    <div class="modal-content">
+      <!-- File Upload Area -->
+      <div class="upload-section">
+        <div class="upload-area" *ngIf="selectedFiles.length === 0">
+          <input type="file" id="fileInput" multiple accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+          <label for="fileInput" class="upload-label">
+            <svg class="upload-icon" viewBox="0 0 24 24" fill="currentColor">
+              <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+            </svg>
+            <p>Select photos (1-6 images, max 2MB each)</p>
+          </label>
+        </div>
+
+        <!-- Image Previews -->
+        <div class="image-previews" *ngIf="selectedFiles.length > 0">
+          <div class="preview-item" *ngFor="let preview of imagePreviews; let i = index">
+            <img [src]="preview" alt="Preview">
+            <button class="remove-btn" (click)="removeImage(i)">×</button>
+          </div>
+          <div class="add-more" *ngIf="selectedFiles.length < 6">
+            <input type="file" id="addMoreInput" multiple accept="image/*" (change)="onFileSelected($event)" style="display: none;">
+            <label for="addMoreInput" class="add-more-label">
+              <svg class="add-icon" viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z"/>
+              </svg>
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <!-- Error Message -->
+      <div class="error-message" *ngIf="uploadError">
+        {{ uploadError }}
+      </div>
+
+      <!-- Caption Input -->
+      <div class="caption-section">
+        <label for="caption">Caption</label>
+        <textarea 
+          id="caption" 
+          [(ngModel)]="caption" 
+          placeholder="Write a caption..."
+          rows="4"
+          maxlength="500"></textarea>
+        <span class="char-count">{{ caption.length }}/500</span>
+      </div>
+
+      <!-- Action Buttons -->
+      <div class="modal-actions">
+        <button class="btn-cancel" (click)="onClose()" [disabled]="isUploading">Cancel</button>
+        <button class="btn-share" (click)="sharePost()" [disabled]="isUploading || selectedFiles.length === 0">
+          <span *ngIf="!isUploading">Share</span>
+          <span *ngIf="isUploading">Sharing...</span>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
