@@ -1,5 +1,6 @@
 import { Component, OnInit } from '@angular/core';
 import { Router } from '@angular/router';
+import { PostService, Post, PostSummaryResponse } from '../../services/post.service';
 
 interface Notification {
   message: string;
@@ -36,10 +37,16 @@ export class HomepageComponent implements OnInit {
   stats: Stats = {
     followers: 120,
     following: 180,
-    posts: 45
+    posts: 0
   };
 
-  photos: any[] = Array(6).fill(null); // 6 placeholder photos
+  posts: Post[] = [];
+  postThumbnails: { [postId: number]: string } = {}; // Store base64 thumbnails
+  loadingPosts: boolean = false;
+  
+  // Post viewer
+  showPostViewer: boolean = false;
+  selectedPost: Post | null = null;
 
   notifications: Notification[] = [
     {
@@ -58,7 +65,10 @@ export class HomepageComponent implements OnInit {
     }
   ];
 
-  constructor(private router: Router) { }
+  constructor(
+    private router: Router,
+    private postService: PostService
+  ) { }
 
   ngOnInit(): void {
     // Get user info from localStorage
@@ -91,6 +101,11 @@ export class HomepageComponent implements OnInit {
         }
         
         console.log('User data loaded:', { firstName: user.firstName, userName: this.userName, hasProfilePicture: !!this.profilePicture, userId: this.userId });
+        
+        // Fetch posts after user ID is loaded
+        if (this.userId) {
+          this.loadPosts();
+        }
       } catch (error) {
         console.error('Error parsing user data:', error);
         this.userName = 'User';
@@ -106,6 +121,74 @@ export class HomepageComponent implements OnInit {
     // Update notification count
     this.updateNotificationCount();
   }
+
+  loadPosts(): void {
+    if (!this.userId) {
+      console.error('User ID not available for loading posts');
+      return;
+    }
+
+    this.loadingPosts = true;
+    this.postService.getPostSummary(this.userId).subscribe({
+      next: (response: PostSummaryResponse) => {
+        console.log('Post summary loaded:', response);
+        this.posts = response.posts || [];
+        this.stats.posts = response.totalcount || 0;
+        
+        // Load thumbnails for all posts
+        this.loadPostThumbnails();
+        this.loadingPosts = false;
+      },
+      error: (error) => {
+        console.error('Error loading posts:', error);
+        this.loadingPosts = false;
+        this.showToastMessage('Failed to load posts. Please try again.');
+      }
+    });
+  }
+
+  loadPostThumbnails(): void {
+    this.posts.forEach((post) => {
+      if (post.imageUrls && post.imageUrls.length > 0) {
+        const firstImageUrl = post.imageUrls[0];
+        this.loadImageAsBase64(firstImageUrl, post.postId);
+      }
+    });
+  }
+
+  loadImageAsBase64(imageUrl: string, postId: number): void {
+    this.postService.getImage(imageUrl).subscribe({
+      next: (blob: Blob) => {
+        const reader = new FileReader();
+        reader.onload = () => {
+          this.postThumbnails[postId] = reader.result as string;
+        };
+        reader.readAsDataURL(blob);
+      },
+      error: (error) => {
+        console.error(`Error loading thumbnail for post ${postId}:`, error);
+      }
+    });
+  }
+
+  openPostViewer(post: Post): void {
+    this.selectedPost = post;
+    this.showPostViewer = true;
+  }
+
+  closePostViewer(): void {
+    this.showPostViewer = false;
+    this.selectedPost = null;
+  }
+
+  hasMultipleImages(post: Post): boolean {
+    return post.imageUrls && post.imageUrls.length > 1;
+  }
+
+  getThumbnail(postId: number): string | null {
+    return this.postThumbnails[postId] || null;
+  }
+
 
   toggleNotifications(): void {
     this.showNotifications = !this.showNotifications;
@@ -151,10 +234,12 @@ export class HomepageComponent implements OnInit {
     // Show toast notification
     this.showToastMessage('Post shared successfully!');
     
-    // Reload homepage after a short delay
+    // Reload posts after a short delay
     setTimeout(() => {
-      window.location.reload();
-    }, 2000);
+      if (this.userId) {
+        this.loadPosts();
+      }
+    }, 1500);
   }
 
   showToastMessage(message: string): void {

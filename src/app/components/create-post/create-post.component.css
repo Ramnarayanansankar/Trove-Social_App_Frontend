@@ -139,6 +139,57 @@
   object-fit: cover;
 }
 
+.image-loading {
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f0f0f0;
+}
+
+.loading-spinner-small {
+  width: 24px;
+  height: 24px;
+  border: 2px solid #e0e0e0;
+  border-top-color: #667eea;
+  border-radius: 50%;
+  animation: spin 0.8s linear infinite;
+}
+
+@keyframes spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.crop-btn {
+  position: absolute;
+  top: 4px;
+  left: 4px;
+  width: 28px;
+  height: 28px;
+  border-radius: 4px;
+  background: rgba(102, 126, 234, 0.9);
+  color: #fff;
+  border: none;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s;
+  z-index: 2;
+}
+
+.crop-btn:hover {
+  background: rgba(102, 126, 234, 1);
+}
+
+.crop-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
 .remove-btn {
   position: absolute;
   top: 4px;
@@ -156,6 +207,7 @@
   font-size: 16px;
   line-height: 1;
   transition: background 0.2s;
+  z-index: 2;
 }
 
 .remove-btn:hover {
@@ -280,6 +332,148 @@
   cursor: not-allowed;
 }
 
+/* ---------- Crop Modal ---------- */
+.crop-modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.9);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1002;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.3s, visibility 0.3s;
+}
+
+.crop-modal-overlay.show {
+  opacity: 1;
+  visibility: visible;
+}
+
+.crop-modal {
+  background: #fff;
+  border-radius: 12px;
+  width: 90%;
+  max-width: 700px;
+  max-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  animation: modalSlideIn 0.3s ease-out;
+}
+
+.crop-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid #eee;
+}
+
+.crop-header h3 {
+  margin: 0;
+  font-size: 18px;
+  font-weight: 600;
+  color: #222;
+}
+
+.crop-close-btn {
+  background: transparent;
+  border: none;
+  font-size: 28px;
+  cursor: pointer;
+  color: #777;
+  padding: 0;
+  width: 32px;
+  height: 32px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.crop-close-btn:hover {
+  background: #f0f0f0;
+}
+
+.crop-content {
+  padding: 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.crop-instructions {
+  text-align: center;
+  color: #666;
+  font-size: 14px;
+  margin: 0;
+}
+
+.crop-instructions p {
+  margin: 0;
+}
+
+.crop-canvas-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  background: #f5f5f5;
+  border-radius: 8px;
+  padding: 20px;
+  overflow: hidden;
+}
+
+.crop-canvas {
+  max-width: 100%;
+  max-height: 60vh;
+  cursor: move;
+  border-radius: 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.crop-actions {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding-top: 16px;
+  border-top: 1px solid #eee;
+}
+
+.btn-crop-cancel,
+.btn-crop-apply {
+  padding: 10px 24px;
+  border-radius: 8px;
+  font-size: 14px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+  border: none;
+}
+
+.btn-crop-cancel {
+  background: #f0f0f0;
+  color: #222;
+}
+
+.btn-crop-cancel:hover {
+  background: #e0e0e0;
+}
+
+.btn-crop-apply {
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  color: #fff;
+}
+
+.btn-crop-apply:hover {
+  opacity: 0.9;
+  transform: translateY(-1px);
+}
+
 /* Responsive Modal */
 @media (max-width: 768px) {
   .create-modal {
@@ -293,6 +487,15 @@
 
   .modal-content {
     padding: 16px;
+  }
+
+  .crop-modal {
+    width: 95%;
+    max-height: 95vh;
+  }
+
+  .crop-canvas {
+    max-height: 50vh;
   }
 }
 

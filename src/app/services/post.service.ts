@@ -3,6 +3,19 @@ import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Observable, throwError } from 'rxjs';
 import { catchError } from 'rxjs/operators';
 
+export interface Post {
+  postId: number;
+  caption: string;
+  imageUrls: string[];
+  date: string;
+}
+
+export interface PostSummaryResponse {
+  totalcount: number;
+  remainingPosts: number;
+  posts: Post[];
+}
+
 @Injectable({
   providedIn: 'root'
 })
@@ -44,6 +57,42 @@ export class PostService {
         console.error('Error message:', error.message);
         console.error('Error body:', error.error);
         console.error('Full error:', error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get post summary for a user (first 10 posts)
+  getPostSummary(userId: string): Observable<PostSummaryResponse> {
+    const apiUrl = `${this.baseUrl}/postSummary/${userId}`;
+    console.log('=== Fetching Post Summary ===');
+    console.log('API URL:', apiUrl);
+    console.log('User ID:', userId);
+    
+    return this.http.get<PostSummaryResponse>(apiUrl).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('=== Get Post Summary Failed ===');
+        console.error('Status:', error.status);
+        console.error('Status Text:', error.statusText);
+        console.error('Request URL:', error.url);
+        console.error('Error message:', error.message);
+        console.error('Error body:', error.error);
+        return throwError(() => error);
+      })
+    );
+  }
+
+  // Get image from URL (returns blob)
+  getImage(imageUrl: string): Observable<Blob> {
+    console.log('=== Fetching Image ===');
+    console.log('Image URL:', imageUrl);
+    
+    return this.http.get(imageUrl, { responseType: 'blob' }).pipe(
+      catchError((error: HttpErrorResponse) => {
+        console.error('=== Get Image Failed ===');
+        console.error('Status:', error.status);
+        console.error('Image URL:', imageUrl);
+        console.error('Error message:', error.message);
         return throwError(() => error);
       })
     );

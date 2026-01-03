@@ -21,8 +21,16 @@
         <!-- Image Previews -->
         <div class="image-previews" *ngIf="selectedFiles.length > 0">
           <div class="preview-item" *ngFor="let preview of imagePreviews; let i = index">
-            <img [src]="preview" alt="Preview">
-            <button class="remove-btn" (click)="removeImage(i)">×</button>
+            <img [src]="preview" alt="Preview" *ngIf="preview">
+            <div class="image-loading" *ngIf="!preview">
+              <div class="loading-spinner-small"></div>
+            </div>
+            <button class="crop-btn" *ngIf="preview" (click)="openCropModal(i, originalImageDataUrls[i] || preview)" title="Adjust crop">
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM5 19V5h14v14H5zm3.5-4L9 13.5 11.5 17H16l-4-5.5L9 16.5z"/>
+              </svg>
+            </button>
+            <button class="remove-btn" *ngIf="preview" (click)="removeImage(i)">×</button>
           </div>
           <div class="add-more" *ngIf="selectedFiles.length < 6">
             <input type="file" id="addMoreInput" multiple accept="image/*" (change)="onFileSelected($event)" style="display: none;">
@@ -59,6 +67,36 @@
           <span *ngIf="!isUploading">Share</span>
           <span *ngIf="isUploading">Sharing...</span>
         </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Crop Modal -->
+  <div class="crop-modal-overlay" [class.show]="showCropModal" *ngIf="showCropModal">
+    <div class="crop-modal" (click)="$event.stopPropagation()">
+      <div class="crop-header">
+        <h3>Adjust Image</h3>
+        <button class="crop-close-btn" (click)="closeCropModal()">×</button>
+      </div>
+      <div class="crop-content">
+        <div class="crop-instructions">
+          <p>Drag to move • Scroll to zoom • Images will be cropped to square (1000x1000)</p>
+        </div>
+        <div class="crop-canvas-container">
+          <canvas 
+            id="cropCanvas"
+            (mousedown)="onCropMouseDown($event)"
+            (mousemove)="onCropMouseMove($event)"
+            (mouseup)="onCropMouseUp()"
+            (mouseleave)="onCropMouseUp()"
+            (wheel)="onCropWheel($event)"
+            class="crop-canvas">
+          </canvas>
+        </div>
+        <div class="crop-actions">
+          <button class="btn-crop-cancel" (click)="closeCropModal()">Cancel</button>
+          <button class="btn-crop-apply" (click)="applyCrop()">Apply</button>
+        </div>
       </div>
     </div>
   </div>

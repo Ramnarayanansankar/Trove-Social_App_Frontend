@@ -32,8 +32,39 @@
   </div>
 
   <!-- PHOTO GRID -->
-  <div class="grid">
-    <div class="photo" *ngFor="let photo of photos"></div>
+  <div class="grid" *ngIf="!loadingPosts">
+    <div 
+      class="photo" 
+      *ngFor="let post of posts"
+      (click)="openPostViewer(post)">
+      <img 
+        *ngIf="getThumbnail(post.postId)" 
+        [src]="getThumbnail(post.postId)" 
+        alt="Post thumbnail"
+        class="photo-image">
+      <div class="photo-overlay">
+        <div class="photo-multiple-indicator" *ngIf="hasMultipleImages(post)">
+          <svg viewBox="0 0 24 24" fill="currentColor">
+            <path d="M22 16V4c0-1.1-.9-2-2-2H8c-1.1 0-2 .9-2 2v12c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2zm-11.5-2L8 10.5l-2.5 3.5L4 12l4-5 4.5 5-1 1z"/>
+          </svg>
+          <span>{{ post.imageUrls.length }}</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Loading State -->
+  <div class="loading-container" *ngIf="loadingPosts">
+    <div class="loading-spinner"></div>
+    <p>Loading posts...</p>
+  </div>
+
+  <!-- Empty State -->
+  <div class="empty-state" *ngIf="!loadingPosts && posts.length === 0">
+    <svg class="empty-icon" viewBox="0 0 24 24" fill="currentColor">
+      <path d="M21 19V5c0-1.1-.9-2-2-2H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2zM8.5 13.5l2.5 3.01L14.5 12l4.5 6H5l3.5-4.5z"/>
+    </svg>
+    <p>No posts yet. Create your first post!</p>
   </div>
 
   <!-- NOTIFICATIONS DRAWER -->
@@ -76,5 +107,13 @@
       <span class="toast-message">{{ toastMessage }}</span>
     </div>
   </div>
+
+  <!-- POST VIEWER MODAL -->
+  <app-post-viewer
+    [show]="showPostViewer"
+    [post]="selectedPost"
+    [thumbnail]="selectedPost ? getThumbnail(selectedPost.postId) : null"
+    (close)="closePostViewer()">
+  </app-post-viewer>
   </div>
 </div>

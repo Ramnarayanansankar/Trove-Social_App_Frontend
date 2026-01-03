@@ -1,0 +1,49 @@
+<div class="post-viewer-overlay" [class.show]="show" (click)="onClose()">
+  <div class="post-viewer" (click)="$event.stopPropagation()" *ngIf="post">
+    <!-- Close Button (Floating Outside) -->
+    <button class="viewer-close" (click)="onClose()">×</button>
+    
+    <!-- Navigation Arrows (Floating Outside) -->
+    <button 
+      class="nav-arrow nav-prev" 
+      *ngIf="currentImageIndex > 0"
+      (click)="previousImage(); $event.stopPropagation()">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z"/>
+      </svg>
+    </button>
+    <button 
+      class="nav-arrow nav-next" 
+      *ngIf="currentImageIndex < post.imageUrls.length - 1"
+      (click)="nextImage(); $event.stopPropagation()">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M10 6L8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z"/>
+      </svg>
+    </button>
+    
+    <!-- Image Container -->
+    <div class="viewer-image-container">
+      <div class="image-loader" *ngIf="loadingImage">
+        <div class="spinner"></div>
+      </div>
+      <img 
+        *ngIf="currentImageUrl && !loadingImage" 
+        [src]="currentImageUrl" 
+        alt="Post image"
+        class="viewer-image">
+    </div>
+    
+    <!-- Post Info -->
+    <div class="viewer-info">
+      <div class="viewer-caption">
+        <p>{{ post.caption }}</p>
+      </div>
+      <div class="viewer-meta">
+        <span class="viewer-date">{{ formatDate(post.date) | date:'medium' }}</span>
+        <span class="viewer-image-count" *ngIf="hasMultipleImages()">
+          {{ currentImageIndex + 1 }} / {{ post.imageUrls.length }}
+        </span>
+      </div>
+    </div>
+  </div>
+</div>
