@@ -11,9 +11,11 @@ export interface Post {
 }
 
 export interface PostSummaryResponse {
-  totalcount: number;
-  remainingPosts: number;
+  totalCount: number;
   posts: Post[];
+  startIndex: number;
+  endIndex: number;
+  hasMore: boolean;
 }
 
 @Injectable({
@@ -62,12 +64,14 @@ export class PostService {
     );
   }
 
-  // Get post summary for a user (first 10 posts)
-  getPostSummary(userId: string): Observable<PostSummaryResponse> {
-    const apiUrl = `${this.baseUrl}/postSummary/${userId}`;
+  // Get post summary for a user with pagination
+  getPostSummary(userId: string, startIndex: number, endIndex: number): Observable<PostSummaryResponse> {
+    const apiUrl = `${this.baseUrl}/postSummary/${userId}?startIndex=${startIndex}&endIndex=${endIndex}`;
     console.log('=== Fetching Post Summary ===');
     console.log('API URL:', apiUrl);
     console.log('User ID:', userId);
+    console.log('Start Index:', startIndex);
+    console.log('End Index:', endIndex);
     
     return this.http.get<PostSummaryResponse>(apiUrl).pipe(
       catchError((error: HttpErrorResponse) => {

@@ -67,6 +67,12 @@
     <p>No posts yet. Create your first post!</p>
   </div>
 
+  <!-- Loading More Posts Indicator -->
+  <div class="loading-more-container" *ngIf="loadingMorePosts">
+    <div class="loading-spinner-small"></div>
+    <p>Loading more posts...</p>
+  </div>
+
   <!-- NOTIFICATIONS DRAWER -->
   <div class="drawer" [class.show]="showNotifications">
     <div class="drawer-header">
